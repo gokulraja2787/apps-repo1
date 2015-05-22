@@ -26,7 +26,6 @@ public class Main {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		
 		LOGGER.debug("App starts");
 		LOGGER.error("What nonsence");
 		LOGGER.debug("App Ends");
