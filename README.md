@@ -1,2 +1,2 @@
-# apps-repo1
-Common repo for app sources
+# gdrived-repo
+Common repo for gdrived sources
