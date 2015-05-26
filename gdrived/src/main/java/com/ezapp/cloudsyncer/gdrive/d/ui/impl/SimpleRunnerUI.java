@@ -2,6 +2,11 @@ package com.ezapp.cloudsyncer.gdrive.d.ui.impl;
 
 import static javax.swing.SwingUtilities.invokeLater;
 
+import java.awt.Image;
+import java.net.URL;
+
+import javax.swing.ImageIcon;
+
 import com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI;
 
 /**
@@ -40,7 +45,10 @@ class SimpleRunnerUI implements RunnerUI {
 	 * @see com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#shutdown(int)
 	 */
 	public int shutdown(int statusCode) {
-		return 0;
+		if (statusCode != 0) {
+			mainFrame.dispose();
+		}
+		return statusCode;
 	}
 
 	/*
@@ -54,6 +62,17 @@ class SimpleRunnerUI implements RunnerUI {
 			mainFrame.setOAuthURL(url);
 		}
 
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#setImageIco(java.net.URL)
+	 */
+	public void setImageIco(URL url) {
+		ImageIcon imageIcon = new ImageIcon(url);
+		Image image = imageIcon.getImage();
+		mainFrame.setIconImage(image);
 	}
 
 }

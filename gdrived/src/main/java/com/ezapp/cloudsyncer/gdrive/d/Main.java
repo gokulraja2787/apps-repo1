@@ -1,5 +1,6 @@
 package com.ezapp.cloudsyncer.gdrive.d;
 
+import java.net.URL;
 import java.util.Arrays;
 
 import org.apache.logging.log4j.Logger;
@@ -7,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import com.ezapp.cloudsyncer.gdrive.d.log.LogManager;
 import com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI;
 import com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUIFactory;
+import com.ezapp.cloudsyncer.gdrive.d.ui.SysTray;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -50,7 +52,11 @@ public class Main {
 	public static void main(String[] args) {
 		LOGGER.debug("Initializing... Please wait!!!!");
 		runnerUI = RunnerUIFactory.getInstance().getUIInstance();
+		URL fileUrl = Thread.currentThread().getContextClassLoader()
+				.getResource("com/ezapp/cloudsyncer/gdrive/d/images/app-ico.png");
 		runnerUI.start();
+		runnerUI.setImageIco(fileUrl);
+		SysTray.initSysTray();
 		String oauthURL = getOAuthHttpURL();
 		runnerUI.setOAuthURL(oauthURL);
 		LOGGER.info("App initialized");
@@ -76,13 +82,32 @@ public class Main {
 	}
 
 	/**
-	 * Turns down window
+	 * Turns down application
 	 */
 	public static void shutDown() {
+		shutDown(0);
+	}
+
+	/**
+	 * Turns down application
+	 * 
+	 * @param status
+	 */
+	public static void shutDown(int status) {
 		if (null != runnerUI) {
-			runnerUI.shutdown(0);
+			runnerUI.shutdown(status);
 		}
-		System.exit(0);
+		switch (status) {
+		case 0:
+			LOGGER.info("Exit by UI");
+			break;
+		case 1:
+			LOGGER.info("Exit by System Tray");
+			break;
+		default:
+			LOGGER.warn("Application quit with status: " + status);
+		}
+		System.exit(status);
 	}
 
 }
