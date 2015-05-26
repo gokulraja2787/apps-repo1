@@ -3,6 +3,8 @@ package com.ezapp.cloudsyncer.gdrive.d;
 import org.apache.logging.log4j.Logger;
 
 import com.ezapp.cloudsyncer.gdrive.d.log.LogManager;
+import com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI;
+import com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUIFactory;
 
 /**
  * Main for gdrive cloud syncer for Desktop
@@ -26,9 +28,10 @@ public class Main {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		LOGGER.debug("App starts");
-		LOGGER.error("What nonsence");
-		LOGGER.debug("App Ends");
+		LOGGER.debug("Initializing... Please wait!!!!");
+		RunnerUI runnerUI = RunnerUIFactory.getInstance().getUIInstance();
+		runnerUI.start();
+		LOGGER.debug("Init done...");
 	}
 
 }
