@@ -1,32 +1,38 @@
 package com.ezapp.cloudsyncer.gdrive.d.ui;
 
+import com.ezapp.cloudsyncer.gdrive.d.ui.impl.SimpleRunnerUIFactory;
+
 /**
  * Factory class for Runner UI
  * 
  * @author grangarajan
  *
  */
-public class RunnerUIFactory {
+public abstract class RunnerUIFactory {
 
 	/**
 	 * Self instance
 	 */
 	private static RunnerUIFactory selfInstance;
-	
-	/**
-	 * Singleton
-	 */
-	private RunnerUIFactory(){}
 
 	/**
 	 * Get RunnerUIFactory instance
+	 * 
 	 * @return RunnerUIFactory
 	 */
-	public static RunnerUIFactory getInstance(){
+	public static RunnerUIFactory getInstance() {
 		if (null == selfInstance) {
-			selfInstance = new RunnerUIFactory();
+			selfInstance = SimpleRunnerUIFactory.getInstance();
+			//TODO bring DI!!!
 		}
 		return selfInstance;
 	}
-	
+
+	/**
+	 * Get UI Instance
+	 * 
+	 * @return UI Instance
+	 */
+	public abstract RunnerUI getUIInstance();
+
 }
