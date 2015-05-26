@@ -24,4 +24,10 @@ public interface RunnerUI {
 	 */
 	public int shutdown(int statusCode);
 	
+	/**
+	 * Set oAuth URL
+	 * @param url
+	 */
+	public void setOAuthURL(String url);
+	
 }
