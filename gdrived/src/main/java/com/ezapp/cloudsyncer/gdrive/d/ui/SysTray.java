@@ -36,8 +36,11 @@ public class SysTray {
 	public static void initSysTray() {
 		if (SystemTray.isSupported()) {
 			SystemTray tray = SystemTray.getSystemTray();
-			URL fileUrl = Thread.currentThread().getContextClassLoader()
-					.getResource("com/ezapp/cloudsyncer/gdrive/d/images/app40X40-ico.png");
+			URL fileUrl = Thread
+					.currentThread()
+					.getContextClassLoader()
+					.getResource(
+							"com/ezapp/cloudsyncer/gdrive/d/images/app40X40-ico.png");
 			ImageIcon imageIcon = new ImageIcon(fileUrl);
 			Image image = imageIcon.getImage();
 			PopupMenu popup = new PopupMenu();
