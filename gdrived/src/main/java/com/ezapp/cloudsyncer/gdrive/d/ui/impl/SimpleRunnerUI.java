@@ -6,6 +6,7 @@ import java.awt.Image;
 import java.net.URL;
 
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 
 import com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI;
 
@@ -20,9 +21,21 @@ import com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI;
 class SimpleRunnerUI implements RunnerUI {
 
 	/**
-	 * Frame to display
+	 * Add account frame
 	 */
-	private SimpleFrame mainFrame;
+	private AddAccountFrame addAccountFrame;
+	/**
+	 * Main frame
+	 */
+	private MainFrame mainFrame;
+
+	/**
+	 * Initializes simple runner UI
+	 */
+	SimpleRunnerUI() {
+		mainFrame = new MainFrame();
+		addAccountFrame = new AddAccountFrame();
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -30,12 +43,6 @@ class SimpleRunnerUI implements RunnerUI {
 	 * @see com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#start()
 	 */
 	public void start() {
-		mainFrame = new SimpleFrame();
-		/*
-		 * mainFrame.setSize(400, 400);
-		 * mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		 */
-
 		invokeLater(mainFrame);
 	}
 
@@ -46,7 +53,7 @@ class SimpleRunnerUI implements RunnerUI {
 	 */
 	public int shutdown(int statusCode) {
 		if (statusCode != 0) {
-			mainFrame.dispose();
+			addAccountFrame.dispose();
 		}
 		return statusCode;
 	}
@@ -58,8 +65,8 @@ class SimpleRunnerUI implements RunnerUI {
 	 * com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#setOAuthURL(java.lang.String)
 	 */
 	public void setOAuthURL(String url) {
-		if (null != mainFrame) {
-			mainFrame.setOAuthURL(url);
+		if (null != addAccountFrame) {
+			addAccountFrame.setOAuthURL(url);
 		}
 
 	}
@@ -73,6 +80,64 @@ class SimpleRunnerUI implements RunnerUI {
 		ImageIcon imageIcon = new ImageIcon(url);
 		Image image = imageIcon.getImage();
 		mainFrame.setIconImage(image);
+		addAccountFrame.setIconImage(image);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#openAddAccountWindow()
+	 */
+	public void openAddAccountWindow() {
+		invokeLater(addAccountFrame);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#showHideMainUI()
+	 */
+	public void toggleShowHideMainUI() {
+		if (mainFrame.isVisible()) {
+			mainFrame.setVisible(false);
+		} else {
+			mainFrame.setVisible(true);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#showError(java.lang.String)
+	 */
+	public void showError(String message) {
+		JOptionPane.showMessageDialog(mainFrame, message, "Error",
+				JOptionPane.ERROR_MESSAGE);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#showWarning(java.lang.String)
+	 */
+	public void showWarning(String message) {
+		JOptionPane.showMessageDialog(mainFrame, message, "Error",
+				JOptionPane.WARNING_MESSAGE);
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#showInfo(java.lang.String)
+	 */
+	public void showInfo(String message) {
+		JOptionPane.showMessageDialog(mainFrame, message, "Error",
+				JOptionPane.INFORMATION_MESSAGE);
+
 	}
 
 }
