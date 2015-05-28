@@ -31,6 +31,11 @@ public class SysTray {
 	private static Logger LOGGER = LogManager.getLogger(SysTray.class);
 
 	/**
+	 * Application context listener
+	 */
+	private static GdrivedContextListener applicationContextListener = new GdrivedContextListener();
+
+	/**
 	 * Sets up System Tray
 	 */
 	public static void initSysTray() {
@@ -44,10 +49,25 @@ public class SysTray {
 			ImageIcon imageIcon = new ImageIcon(fileUrl);
 			Image image = imageIcon.getImage();
 			PopupMenu popup = new PopupMenu();
+			MenuItem addActItem = new MenuItem(
+					GdrivedContextListener.ACTION_COMMAND.ADD_ACCOUNT
+							.getValue());
 			MenuItem exitItem = new MenuItem(
 					GdrivedContextListener.ACTION_COMMAND.EXIT.getValue());
+			MenuItem toggleShowHideItm = new MenuItem(
+					GdrivedContextListener.ACTION_COMMAND.SHOW_HIDE.getValue());
+			popup.add(addActItem);
+			popup.add(toggleShowHideItm);
 			popup.add(exitItem);
-			exitItem.addActionListener(new GdrivedContextListener());
+			toggleShowHideItm.addActionListener(applicationContextListener);
+			toggleShowHideItm
+					.setActionCommand(GdrivedContextListener.ACTION_COMMAND.SHOW_HIDE
+							.getValue());
+			addActItem.addActionListener(applicationContextListener);
+			addActItem
+					.setActionCommand(GdrivedContextListener.ACTION_COMMAND.ADD_ACCOUNT
+							.getValue());
+			exitItem.addActionListener(applicationContextListener);
 			exitItem.setActionCommand(GdrivedContextListener.ACTION_COMMAND.EXIT
 					.getValue());
 			TrayIcon trayIcon = new TrayIcon(image,
@@ -81,6 +101,14 @@ class GdrivedContextListener implements ActionListener {
 	 *
 	 */
 	static enum ACTION_COMMAND {
+		/**
+		 * Show Hide main UI
+		 */
+		SHOW_HIDE("Show/Hide gdrive-d"),
+		/**
+		 * Add account
+		 */
+		ADD_ACCOUNT("Add Account"),
 		/**
 		 * Exit
 		 */
@@ -121,6 +149,12 @@ class GdrivedContextListener implements ActionListener {
 		if (command.equals(GdrivedContextListener.ACTION_COMMAND.EXIT
 				.getValue())) {
 			Main.shutDown(1);
+		} else if (command
+				.equals(GdrivedContextListener.ACTION_COMMAND.ADD_ACCOUNT
+						.getValue())) {
+			Main.addAccount();
+		} else if (command.equals(GdrivedContextListener.ACTION_COMMAND.SHOW_HIDE.getValue())) {
+			Main.toggleShowHideMainUI();
 		}
 	}
 

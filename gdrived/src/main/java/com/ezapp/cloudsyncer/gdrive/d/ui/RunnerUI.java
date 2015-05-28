@@ -38,4 +38,14 @@ public interface RunnerUI {
 	 */
 	public void setImageIco(URL url);
 	
+	/**
+	 * Open's add account window
+	 */
+	public void openAddAccountWindow();
+	
+	/**
+	 * Show / hide main UI
+	 */
+	public void toggleShowHideMainUI();
+	
 }

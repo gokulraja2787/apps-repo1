@@ -52,8 +52,11 @@ public class Main {
 	public static void main(String[] args) {
 		LOGGER.debug("Initializing... Please wait!!!!");
 		runnerUI = RunnerUIFactory.getInstance().getUIInstance();
-		URL fileUrl = Thread.currentThread().getContextClassLoader()
-				.getResource("com/ezapp/cloudsyncer/gdrive/d/images/app-ico.png");
+		URL fileUrl = Thread
+				.currentThread()
+				.getContextClassLoader()
+				.getResource(
+						"com/ezapp/cloudsyncer/gdrive/d/images/app-ico.png");
 		runnerUI.start();
 		runnerUI.setImageIco(fileUrl);
 		SysTray.initSysTray();
@@ -108,6 +111,20 @@ public class Main {
 			LOGGER.warn("Application quit with status: " + status);
 		}
 		System.exit(status);
+	}
+
+	/**
+	 * Opens add account frame
+	 */
+	public static void addAccount() {
+		runnerUI.openAddAccountWindow();
+	}
+	
+	/**
+	 * Shows / hides Main UI
+	 */
+	public static void toggleShowHideMainUI() {
+		runnerUI.toggleShowHideMainUI();
 	}
 
 }

@@ -4,8 +4,6 @@ import java.awt.Font;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -18,21 +16,20 @@ import javax.swing.SwingConstants;
 
 import org.apache.logging.log4j.Logger;
 
-import com.ezapp.cloudsyncer.gdrive.d.Main;
 import com.ezapp.cloudsyncer.gdrive.d.log.LogManager;
 
 /**
- * Frame to hold UI details
+ * Add account UI
  * 
  * @author grangarajan
  *
  */
-class SimpleFrame extends JFrame implements Runnable {
+class AddAccountFrame extends JFrame implements Runnable {
 
 	/**
 	 * Logger
 	 */
-	private static Logger LOGGER = LogManager.getLogger(SimpleFrame.class);
+	private static Logger LOGGER = LogManager.getLogger(AddAccountFrame.class);
 
 	/**
 	 * Simple browser
@@ -63,19 +60,14 @@ class SimpleFrame extends JFrame implements Runnable {
 	/**
 	 * @throws HeadlessException
 	 */
-	SimpleFrame() throws HeadlessException {
+	AddAccountFrame() throws HeadlessException {
 		super("gdrive-d");
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosed(WindowEvent evt) {
-				LOGGER.info("App exit...");
-				Main.shutDown();
-			}
-		});
+		setTitle("Add Account");
+
 		setSize(400, 399);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-		JLabel lblGdrived = new JLabel("gdrive-d");
+		JLabel lblGdrived = new JLabel("Add Google Account");
 		lblGdrived.setFont(new Font("Tahoma", Font.PLAIN, 20));
 
 		JLabel lblOpenTheGenerated = new JLabel(
@@ -114,12 +106,6 @@ class SimpleFrame extends JFrame implements Runnable {
 														.addGroup(
 																groupLayout
 																		.createSequentialGroup()
-																		.addGap(155)
-																		.addComponent(
-																				lblGdrived))
-														.addGroup(
-																groupLayout
-																		.createSequentialGroup()
 																		.addContainerGap()
 																		.addComponent(
 																				lblOpenTheGenerated,
@@ -140,18 +126,23 @@ class SimpleFrame extends JFrame implements Runnable {
 																				lblPaste)
 																		.addPreferredGap(
 																				ComponentPlacement.RELATED)
-																		.addComponent(
-																				oauthField,
-																				GroupLayout.DEFAULT_SIZE,
-																				243,
-																				Short.MAX_VALUE))
-														.addGroup(
-																groupLayout
-																		.createSequentialGroup()
-																		.addGap(90)
-																		.addComponent(
-																				btnAddAccount)))
-										.addContainerGap()));
+																		.addGroup(
+																				groupLayout
+																						.createParallelGroup(
+																								Alignment.LEADING)
+																						.addComponent(
+																								btnAddAccount)
+																						.addComponent(
+																								oauthField,
+																								GroupLayout.DEFAULT_SIZE,
+																								243,
+																								Short.MAX_VALUE))))
+										.addContainerGap())
+						.addGroup(
+								Alignment.TRAILING,
+								groupLayout.createSequentialGroup()
+										.addContainerGap(105, Short.MAX_VALUE)
+										.addComponent(lblGdrived).addGap(101)));
 		groupLayout
 				.setVerticalGroup(groupLayout
 						.createParallelGroup(Alignment.LEADING)
@@ -177,7 +168,7 @@ class SimpleFrame extends JFrame implements Runnable {
 																GroupLayout.DEFAULT_SIZE,
 																GroupLayout.PREFERRED_SIZE))
 										.addGap(18).addComponent(btnAddAccount)
-										.addContainerGap(123, Short.MAX_VALUE)));
+										.addContainerGap(118, Short.MAX_VALUE)));
 		getContentPane().setLayout(groupLayout);
 	}
 
