@@ -1,5 +1,7 @@
 package com.ezapp.cloudsyncer.gdrive.d.ui;
 
+import java.net.URL;
+
 /**
  * 
  * UI event/behaviour Definition 
@@ -23,5 +25,17 @@ public interface RunnerUI {
 	 * @return statusCode
 	 */
 	public int shutdown(int statusCode);
+	
+	/**
+	 * Set oAuth URL
+	 * @param url
+	 */
+	public void setOAuthURL(String url);
+	
+	/**
+	 * Set image icon
+	 * @param url
+	 */
+	public void setImageIco(URL url);
 	
 }
