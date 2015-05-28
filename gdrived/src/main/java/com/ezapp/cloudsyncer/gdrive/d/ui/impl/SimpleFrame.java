@@ -2,6 +2,8 @@ package com.ezapp.cloudsyncer.gdrive.d.ui.impl;
 
 import java.awt.Font;
 import java.awt.HeadlessException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -10,7 +12,6 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
@@ -32,7 +33,12 @@ class SimpleFrame extends JFrame implements Runnable {
 	 * Logger
 	 */
 	private static Logger LOGGER = LogManager.getLogger(SimpleFrame.class);
-	
+
+	/**
+	 * Simple browser
+	 */
+	private SimpleBrowser authBrowser;
+
 	/**
 	 * Serial number
 	 */
@@ -41,8 +47,9 @@ class SimpleFrame extends JFrame implements Runnable {
 	/**
 	 * Field to hold generated oauth URL
 	 */
-	private JTextArea oauthURLField;
-	private JTextField authCode;
+	private String oauthURLField = new String(
+			"Please wait while URL is generated.");
+	private JTextField oauthField;
 
 	/*
 	 * (non-Javadoc)
@@ -65,67 +72,112 @@ class SimpleFrame extends JFrame implements Runnable {
 				Main.shutDown();
 			}
 		});
-		setSize(400, 400);
+		setSize(400, 399);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
 		JLabel lblGdrived = new JLabel("gdrive-d");
 		lblGdrived.setFont(new Font("Tahoma", Font.PLAIN, 20));
 
 		JLabel lblOpenTheGenerated = new JLabel(
-				"<html><body style='width: 200px'>Open the generated URL in your browser. Then copy paste the code generated in the browser.</body></html>");
+				"<html><body style='width: 280px'>In order to start using gdrive cloud syncer you need to login to google account first. Click on the below button to authenticate using your google credential, then copy the code and paste it below.</body></html>");
+		lblOpenTheGenerated.setHorizontalAlignment(SwingConstants.CENTER);
 		lblOpenTheGenerated.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblOpenTheGenerated.setVerticalAlignment(SwingConstants.TOP);
 
-		oauthURLField = new JTextArea();
-		oauthURLField.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		oauthURLField.setEditable(false);
-		oauthURLField.setWrapStyleWord(true);
-		oauthURLField.setColumns(15);
-		oauthURLField.setRows(8);
-		oauthURLField.setText("Please wait while URL is generated.");
-		oauthURLField.setLineWrap(true);
-		
-		authCode = new JTextField();
-		authCode.setColumns(10);
-		
-		JButton btnLogin = new JButton("Login");
+		JButton btnLogin = new JButton("Authentical using a google credential");
+		btnLogin.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				LOGGER.info("Opening browser");
+				authBrowser = new SimpleBrowser();
+				authBrowser.openBrowser();
+				authBrowser.openUrl(oauthURLField);
+			}
+		});
+
+		JLabel lblPaste = new JLabel("Paste the code here:");
+		lblPaste.setFont(new Font("Tahoma", Font.PLAIN, 12));
+
+		JButton btnAddAccount = new JButton("Add Account");
+
+		oauthField = new JTextField();
+		oauthField.setColumns(10);
 		GroupLayout groupLayout = new GroupLayout(getContentPane());
-		groupLayout.setHorizontalGroup(
-			groupLayout.createParallelGroup(Alignment.TRAILING)
-				.addGroup(groupLayout.createSequentialGroup()
-					.addGap(155)
-					.addComponent(lblGdrived)
-					.addContainerGap(156, Short.MAX_VALUE))
-				.addGroup(groupLayout.createSequentialGroup()
-					.addContainerGap(59, Short.MAX_VALUE)
-					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addComponent(oauthURLField, GroupLayout.PREFERRED_SIZE, 265, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblOpenTheGenerated, GroupLayout.PREFERRED_SIZE, 273, GroupLayout.PREFERRED_SIZE))
-					.addGap(52))
-				.addGroup(Alignment.LEADING, groupLayout.createSequentialGroup()
-					.addGap(111)
-					.addComponent(authCode, GroupLayout.PREFERRED_SIZE, 135, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap(138, Short.MAX_VALUE))
-				.addGroup(Alignment.LEADING, groupLayout.createSequentialGroup()
-					.addGap(148)
-					.addComponent(btnLogin)
-					.addContainerGap(179, Short.MAX_VALUE))
-		);
-		groupLayout.setVerticalGroup(
-			groupLayout.createParallelGroup(Alignment.LEADING)
-				.addGroup(groupLayout.createSequentialGroup()
-					.addContainerGap()
-					.addComponent(lblGdrived)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(lblOpenTheGenerated)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(oauthURLField, GroupLayout.PREFERRED_SIZE, 141, GroupLayout.PREFERRED_SIZE)
-					.addGap(18)
-					.addComponent(authCode, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(btnLogin)
-					.addContainerGap(55, Short.MAX_VALUE))
-		);
+		groupLayout
+				.setHorizontalGroup(groupLayout
+						.createParallelGroup(Alignment.LEADING)
+						.addGroup(
+								groupLayout
+										.createSequentialGroup()
+										.addGroup(
+												groupLayout
+														.createParallelGroup(
+																Alignment.LEADING)
+														.addGroup(
+																groupLayout
+																		.createSequentialGroup()
+																		.addGap(155)
+																		.addComponent(
+																				lblGdrived))
+														.addGroup(
+																groupLayout
+																		.createSequentialGroup()
+																		.addContainerGap()
+																		.addComponent(
+																				lblOpenTheGenerated,
+																				GroupLayout.DEFAULT_SIZE,
+																				364,
+																				Short.MAX_VALUE))
+														.addGroup(
+																groupLayout
+																		.createSequentialGroup()
+																		.addGap(77)
+																		.addComponent(
+																				btnLogin))
+														.addGroup(
+																groupLayout
+																		.createSequentialGroup()
+																		.addContainerGap()
+																		.addComponent(
+																				lblPaste)
+																		.addPreferredGap(
+																				ComponentPlacement.RELATED)
+																		.addComponent(
+																				oauthField,
+																				GroupLayout.DEFAULT_SIZE,
+																				243,
+																				Short.MAX_VALUE))
+														.addGroup(
+																groupLayout
+																		.createSequentialGroup()
+																		.addGap(90)
+																		.addComponent(
+																				btnAddAccount)))
+										.addContainerGap()));
+		groupLayout
+				.setVerticalGroup(groupLayout
+						.createParallelGroup(Alignment.LEADING)
+						.addGroup(
+								groupLayout
+										.createSequentialGroup()
+										.addContainerGap()
+										.addComponent(lblGdrived)
+										.addPreferredGap(
+												ComponentPlacement.RELATED)
+										.addComponent(lblOpenTheGenerated)
+										.addGap(18)
+										.addComponent(btnLogin)
+										.addGap(31)
+										.addGroup(
+												groupLayout
+														.createParallelGroup(
+																Alignment.BASELINE)
+														.addComponent(lblPaste)
+														.addComponent(
+																oauthField,
+																GroupLayout.PREFERRED_SIZE,
+																GroupLayout.DEFAULT_SIZE,
+																GroupLayout.PREFERRED_SIZE))
+										.addGap(18).addComponent(btnAddAccount)
+										.addContainerGap(123, Short.MAX_VALUE)));
 		getContentPane().setLayout(groupLayout);
 	}
 
@@ -136,7 +188,10 @@ class SimpleFrame extends JFrame implements Runnable {
 	 */
 	public void setOAuthURL(String url) {
 		if (null != oauthURLField) {
-			oauthURLField.setText(url);
+			oauthURLField = url;
+			if (null != authBrowser && !authBrowser.isClosed()) {
+				authBrowser.openUrl(oauthURLField);
+			}
 		}
 	}
 }

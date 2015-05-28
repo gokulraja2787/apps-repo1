@@ -4,7 +4,6 @@ import java.net.URL;
 import java.util.Arrays;
 
 import org.apache.logging.log4j.Logger;
-import org.eclipse.swt.SWT;
 
 import com.ezapp.cloudsyncer.gdrive.d.log.LogManager;
 import com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI;
@@ -60,8 +59,6 @@ public class Main {
 		SysTray.initSysTray();
 		String oauthURL = getOAuthHttpURL();
 		runnerUI.setOAuthURL(oauthURL);
-		SWT swt = new SWT();
-		System.out.println(swt);
 		LOGGER.info("App initialized");
 	}
 
