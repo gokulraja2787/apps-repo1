@@ -6,6 +6,7 @@ import java.awt.Image;
 import java.net.URL;
 
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 
 import com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI;
 
@@ -93,14 +94,50 @@ class SimpleRunnerUI implements RunnerUI {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#showHideMainUI()
 	 */
 	public void toggleShowHideMainUI() {
-		if(mainFrame.isVisible()) {
+		if (mainFrame.isVisible()) {
 			mainFrame.setVisible(false);
 		} else {
 			mainFrame.setVisible(true);
 		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#showError(java.lang.String)
+	 */
+	public void showError(String message) {
+		JOptionPane.showMessageDialog(mainFrame, message, "Error",
+				JOptionPane.ERROR_MESSAGE);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#showWarning(java.lang.String)
+	 */
+	public void showWarning(String message) {
+		JOptionPane.showMessageDialog(mainFrame, message, "Error",
+				JOptionPane.WARNING_MESSAGE);
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#showInfo(java.lang.String)
+	 */
+	public void showInfo(String message) {
+		JOptionPane.showMessageDialog(mainFrame, message, "Error",
+				JOptionPane.INFORMATION_MESSAGE);
+
 	}
 
 }

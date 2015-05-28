@@ -16,6 +16,7 @@ import javax.swing.SwingConstants;
 
 import org.apache.logging.log4j.Logger;
 
+import com.ezapp.cloudsyncer.gdrive.d.Main;
 import com.ezapp.cloudsyncer.gdrive.d.log.LogManager;
 
 /**
@@ -89,6 +90,14 @@ class AddAccountFrame extends JFrame implements Runnable {
 		lblPaste.setFont(new Font("Tahoma", Font.PLAIN, 12));
 
 		JButton btnAddAccount = new JButton("Add Account");
+		btnAddAccount.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				LOGGER.info("Got key!!");
+				String clientKey = oauthField.getText();
+				Main.buildCredential(clientKey);
+				clientKey = null;
+			}
+		});
 
 		oauthField = new JTextField();
 		oauthField.setColumns(10);
