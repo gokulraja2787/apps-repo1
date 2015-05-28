@@ -12,7 +12,10 @@ import com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUIFactory;
 import com.ezapp.cloudsyncer.gdrive.d.ui.SysTray;
 import com.ezapp.cloudsyncer.gdrive.d.vo.Account;
 import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.Drive.Files;
 import com.google.api.services.drive.model.About;
+import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.User;
 
 /**
@@ -151,7 +154,9 @@ public class Main {
 			account.setAuthToken(userKey);
 			account.setUserName(user.getDisplayName());
 			account.setUserEmail(user.getEmailAddress());
+			account.setPictureUrl(user.getPicture().getUrl());
 			testAuth(account);
+			testFiles(drive);
 		} catch (IOException e) {
 			LOGGER.error("Error while testing auth: " + e.getMessage(), e);
 		} finally {
@@ -167,6 +172,21 @@ public class Main {
 	private static void testAuth(Account account) {
 		LOGGER.info("Display Name: " + account.getUserName());
 		LOGGER.info("Email : " + account.getUserEmail());
+	}
+
+	// TODO remove this method
+	private static void testFiles(Drive drive) {
+		Files files = drive.files();
+		FileList fileList;
+		try {
+			fileList = files.list().execute();
+			for (File file : fileList.getItems()) {
+				LOGGER.info("Name " + file.getOriginalFilename() + " size "
+						+ file.getFileSize() + " type " + file.getKind());
+			}
+		} catch (IOException e) {
+			LOGGER.error(e.getMessage(), e);
+		}
 	}
 
 }

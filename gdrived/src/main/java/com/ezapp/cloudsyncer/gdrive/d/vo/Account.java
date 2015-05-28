@@ -29,6 +29,11 @@ public class Account implements Serializable {
 	private String authToken;
 
 	/**
+	 * Holds Picture URL
+	 */
+	private String pictureUrl;
+
+	/**
 	 * @return the userName
 	 */
 	public String getUserName() {
@@ -71,6 +76,21 @@ public class Account implements Serializable {
 	 */
 	public void setAuthToken(String authToken) {
 		this.authToken = authToken;
+	}
+
+	/**
+	 * @return the pictureUrl
+	 */
+	public String getPictureUrl() {
+		return pictureUrl;
+	}
+
+	/**
+	 * @param pictureUrl
+	 *            the pictureUrl to set
+	 */
+	public void setPictureUrl(String pictureUrl) {
+		this.pictureUrl = pictureUrl;
 	}
 
 	/*
