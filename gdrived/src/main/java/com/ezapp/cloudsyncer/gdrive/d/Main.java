@@ -154,7 +154,9 @@ public class Main {
 			account.setAuthToken(userKey);
 			account.setUserName(user.getDisplayName());
 			account.setUserEmail(user.getEmailAddress());
-			account.setPictureUrl(user.getPicture().getUrl());
+			if(null != user.getPicture()) {
+				account.setPictureUrl(user.getPicture().getUrl());
+			}
 			testAuth(account);
 			testFiles(drive);
 		} catch (IOException e) {
