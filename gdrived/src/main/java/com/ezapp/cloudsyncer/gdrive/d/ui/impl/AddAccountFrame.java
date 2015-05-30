@@ -48,6 +48,11 @@ class AddAccountFrame extends JFrame implements Runnable {
 	private String oauthURLField = new String(
 			"Please wait while URL is generated.");
 	private JTextField oauthField;
+	
+	/**
+	 * Self instance
+	 */
+	private AddAccountFrame self;
 
 	/*
 	 * (non-Javadoc)
@@ -64,6 +69,7 @@ class AddAccountFrame extends JFrame implements Runnable {
 	AddAccountFrame() throws HeadlessException {
 		super("gdrive-d");
 		setTitle("Add Account");
+		self = this;
 
 		setSize(400, 399);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -96,6 +102,7 @@ class AddAccountFrame extends JFrame implements Runnable {
 				String clientKey = oauthField.getText();
 				Main.buildCredential(clientKey);
 				clientKey = null;
+				self.dispose();
 			}
 		});
 
