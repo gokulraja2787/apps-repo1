@@ -1,5 +1,6 @@
 package com.ezapp.cloudsyncer.gdrive.d.db;
 
+import com.ezapp.cloudsyncer.gdrive.d.exceptions.AppDBException;
 import com.ezapp.cloudsyncer.gdrive.d.vo.Account;
 
 
@@ -17,18 +18,23 @@ public interface AppDB {
 	 * Checks if DB & schema exists for the application
 	 * 
 	 * @return true if exist else false
+	 * @throws AppDBException
 	 */
-	public boolean isAppDBExist();
+	public boolean isAppConfigExist() throws AppDBException;
 	
 	/**
 	 * Check and create schema if schema doesn't exist
+	 * 
+	 * @throws AppDBException
 	 */
-	public void checkAndCreateBasicSchema();
+	public void checkAndCreateBasicSchema() throws AppDBException;
 	
 	/**
 	 * Add account into the database
+	 * 
 	 * @param account
+	 * @throws AppDBException
 	 */
-	public void addAccount(Account account);
+	public void addAccount(Account account) throws AppDBException;
 	
 }

@@ -5,6 +5,9 @@ import java.net.URL;
 
 import org.apache.logging.log4j.Logger;
 
+import com.ezapp.cloudsyncer.gdrive.d.db.AppDB;
+import com.ezapp.cloudsyncer.gdrive.d.db.impl.AppDBFactory;
+import com.ezapp.cloudsyncer.gdrive.d.exceptions.AppDBException;
 import com.ezapp.cloudsyncer.gdrive.d.google.DriveUtil;
 import com.ezapp.cloudsyncer.gdrive.d.log.LogManager;
 import com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI;
@@ -32,6 +35,11 @@ public class Main {
 	 * Holds UI
 	 */
 	private static RunnerUI runnerUI;
+	
+	/**
+	 * Holds APP DB
+	 */
+	private static AppDB appDB;
 
 	/**
 	 * Application logger
@@ -50,7 +58,14 @@ public class Main {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		LOGGER.debug("Initializing... Please wait!!!!");
+		if(LOGGER.isDebugEnabled()) {
+			LOGGER.debug("App Initializing...");
+			LOGGER.debug("Initializing... DB");
+		}
+		initializeDB();
+		if(LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Initializing.... UI!!!!");
+		}
 		runnerUI = RunnerUIFactory.getInstance().getUIInstance();
 		URL fileUrl = Thread
 				.currentThread()
@@ -72,6 +87,21 @@ public class Main {
 		shutDown(0);
 	}
 
+	/**
+	 * Initializes DB
+	 */
+	private static void initializeDB() {
+		try {
+			appDB = AppDBFactory.getInstance().getAppDBInstance();
+			if(!appDB.isAppConfigExist()) {
+				LOGGER.info("Initializing appconfig in schema");
+				appDB.checkAndCreateBasicSchema();
+			}
+		} catch (AppDBException e) {
+			LOGGER.error("DB Initialization failure: " + e.getMessage(), e);
+		}
+	}
+	
 	/**
 	 * Turns down application
 	 * 
