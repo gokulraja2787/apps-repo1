@@ -35,11 +35,16 @@ public class Main {
 	 * Holds UI
 	 */
 	private static RunnerUI runnerUI;
-	
+
 	/**
 	 * Holds APP DB
 	 */
 	private static AppDB appDB;
+
+	/**
+	 * No instance of main allowed
+	 */
+	private Main() {};
 
 	/**
 	 * Application logger
@@ -58,12 +63,12 @@ public class Main {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		if(LOGGER.isDebugEnabled()) {
+		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("App Initializing...");
 			LOGGER.debug("Initializing... DB");
 		}
 		initializeDB();
-		if(LOGGER.isDebugEnabled()) {
+		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Initializing.... UI!!!!");
 		}
 		runnerUI = RunnerUIFactory.getInstance().getUIInstance();
@@ -93,7 +98,7 @@ public class Main {
 	private static void initializeDB() {
 		try {
 			appDB = AppDBFactory.getInstance().getAppDBInstance();
-			if(!appDB.isAppConfigExist()) {
+			if (!appDB.isAppConfigExist()) {
 				LOGGER.info("Initializing appconfig in schema");
 				appDB.checkAndCreateBasicSchema();
 			}
@@ -101,7 +106,7 @@ public class Main {
 			LOGGER.error("DB Initialization failure: " + e.getMessage(), e);
 		}
 	}
-	
+
 	/**
 	 * Turns down application
 	 * 
@@ -184,9 +189,10 @@ public class Main {
 			account.setAuthToken(userKey);
 			account.setUserName(user.getDisplayName());
 			account.setUserEmail(user.getEmailAddress());
-			if(null != user.getPicture()) {
+			if (null != user.getPicture()) {
 				account.setPictureUrl(user.getPicture().getUrl());
 			}
+			// TODO remove below two lines
 			testAuth(account);
 			testFiles(drive);
 		} catch (IOException e) {

@@ -1,5 +1,7 @@
 package com.ezapp.cloudsyncer.gdrive.d.db;
 
+import java.util.List;
+
 import com.ezapp.cloudsyncer.gdrive.d.exceptions.AppDBException;
 import com.ezapp.cloudsyncer.gdrive.d.vo.Account;
 
@@ -36,5 +38,20 @@ public interface AppDB {
 	 * @throws AppDBException
 	 */
 	public void addAccount(Account account) throws AppDBException;
+	
+	/**
+	 * Get all account from the database
+	 * 
+	 * @return Gets list of accounts from the database
+	 * @throws AppDBException
+	 */
+	public List<Account> getAllAccounts() throws AppDBException;
+	
+	/**
+	 * Deletes Given account
+	 * @param userEmail
+	 * @throws AppDBException
+	 */
+	public void deleteAccount(String userEmail) throws AppDBException;
 	
 }
