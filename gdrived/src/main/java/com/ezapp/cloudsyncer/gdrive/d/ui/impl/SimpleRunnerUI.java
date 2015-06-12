@@ -140,4 +140,15 @@ class SimpleRunnerUI implements RunnerUI {
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#updateUserAccountConfig()
+	 */
+	public void updateUserAccountConfig() {
+		FrameCommand mainFrameCommand = mainFrame;
+		mainFrameCommand.updateConfiguredAccounts();
+		mainFrameCommand = null;
+	}
+
 }

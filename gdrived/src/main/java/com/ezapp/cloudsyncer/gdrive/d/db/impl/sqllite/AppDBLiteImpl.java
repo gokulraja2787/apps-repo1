@@ -341,6 +341,7 @@ class AppDBLiteImpl implements AppDB {
 					account.setAuthToken(resultSet.getString("O_AUTH"));
 					account.setUserName(resultSet.getString("USER_NAME"));
 					account.setUserEmail(resultSet.getString("USER_EMAIL"));
+					account.setPictureUrl(resultSet.getString("PIC_URL"));
 					accountList.add(account);
 				}
 			} catch (SQLException e) {

@@ -71,4 +71,9 @@ public interface RunnerUI {
 	 */
 	public void showInfo(String message);
 
+	/**
+	 * Refreshes configured user accounts
+	 */
+	public void updateUserAccountConfig();
+
 }

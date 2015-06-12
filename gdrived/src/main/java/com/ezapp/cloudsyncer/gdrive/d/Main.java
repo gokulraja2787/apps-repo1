@@ -2,6 +2,7 @@ package com.ezapp.cloudsyncer.gdrive.d;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
@@ -44,7 +45,8 @@ public class Main {
 	/**
 	 * No instance of main allowed
 	 */
-	private Main() {};
+	private Main() {
+	};
 
 	/**
 	 * Application logger
@@ -192,11 +194,19 @@ public class Main {
 			if (null != user.getPicture()) {
 				account.setPictureUrl(user.getPicture().getUrl());
 			}
+
 			// TODO remove below two lines
 			testAuth(account);
 			testFiles(drive);
+
+			appDB.addAccount(account);
+			runnerUI.updateUserAccountConfig();
 		} catch (IOException e) {
 			LOGGER.error("Error while testing auth: " + e.getMessage(), e);
+		} catch (AppDBException e) {
+			LOGGER.error("Error while testing auth: " + e.getMessage(), e);
+			showWarningMessage("Your account is not added to application DB. You can still continue to work. "
+					+ "However, you have relogin again once application ran again");
 		} finally {
 			userKey = null;
 			drive = null;
@@ -204,6 +214,21 @@ public class Main {
 			user = null;
 			account = null;
 		}
+	}
+
+	/**
+	 * Get all configured accounts
+	 * 
+	 * @return List of configured accounts
+	 */
+	public static List<Account> getConfiguredAccounts() {
+		List<Account> configuredAccounts = null;
+		try {
+			configuredAccounts = appDB.getAllAccounts();
+		} catch (AppDBException e) {
+			LOGGER.error("Error while testing auth: " + e.getMessage(), e);
+		}
+		return configuredAccounts;
 	}
 
 	// TODO remove this method
