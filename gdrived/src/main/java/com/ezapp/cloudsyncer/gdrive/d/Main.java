@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import com.ezapp.cloudsyncer.gdrive.d.db.AppDB;
 import com.ezapp.cloudsyncer.gdrive.d.db.impl.AppDBFactory;
 import com.ezapp.cloudsyncer.gdrive.d.exceptions.AppDBException;
+import com.ezapp.cloudsyncer.gdrive.d.exceptions.AppGDriveException;
 import com.ezapp.cloudsyncer.gdrive.d.google.DriveUtil;
 import com.ezapp.cloudsyncer.gdrive.d.log.LogManager;
 import com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI;
@@ -84,6 +85,7 @@ public class Main {
 		SysTray.initSysTray();
 		String oauthURL = driveUtil.getOAuthHttpURL();
 		runnerUI.setOAuthURL(oauthURL);
+		runnerUI.updateUserAccountConfig();
 		LOGGER.info("App initialized");
 	}
 
@@ -175,17 +177,36 @@ public class Main {
 	}
 
 	/**
+	 * 
+	 * @param userAccount
+	 * @return
+	 */
+	public static boolean reAuthenticateWithExistingAccount(Account userAccount) {
+		try {
+			driveUtil.reOAauth(userAccount.getUserEmail());
+//			testFiles(driveUtil.getDrive());
+			return true;
+		} catch (AppGDriveException e) {
+			showErrorMessage("Reauth failed: " + e.getMessage());
+		}
+		return false;
+	}
+	
+	/**
 	 * Builds client credentials
 	 * 
 	 * @param userKey
+	 * @return
 	 */
-	public static void buildCredential(String userKey) {
-		driveUtil.buildCredentials(userKey);
-		Drive drive = driveUtil.getDrive();
+	public static Account buildCredential(String userKey) {
+		Drive drive;
 		About about;
 		User user;
-		Account account = new Account();
+		Account account = null;
 		try {
+			driveUtil.buildCredentials(userKey);
+			drive = driveUtil.getDrive();
+			account = new Account();
 			about = drive.about().get().execute();
 			user = about.getUser();
 			account.setAuthToken(userKey);
@@ -198,15 +219,12 @@ public class Main {
 			// TODO remove below two lines
 			testAuth(account);
 			testFiles(drive);
-
-			appDB.addAccount(account);
-			runnerUI.updateUserAccountConfig();
+			return account;
 		} catch (IOException e) {
 			LOGGER.error("Error while testing auth: " + e.getMessage(), e);
-		} catch (AppDBException e) {
-			LOGGER.error("Error while testing auth: " + e.getMessage(), e);
-			showWarningMessage("Your account is not added to application DB. You can still continue to work. "
-					+ "However, you have relogin again once application ran again");
+			showErrorMessage("Reauthentication failed - please readd the account");
+		} catch (AppGDriveException e) {
+			showErrorMessage(e.getMessage());
 		} finally {
 			userKey = null;
 			drive = null;
@@ -214,6 +232,32 @@ public class Main {
 			user = null;
 			account = null;
 		}
+		return null;
+	}
+
+	/**
+	 * Builds client credentials and add the built credentials to Database
+	 * 
+	 * @param userKey
+	 */
+	public static boolean buildCredentialAndPersist(String userKey) {
+		try {
+			Account account = buildCredential(userKey);
+			if (null != account) {
+				appDB.addAccount(account);
+				runnerUI.updateUserAccountConfig();
+			}
+			return true;
+		} catch (AppDBException e) {
+			LOGGER.error("Error while testing auth: " + e.getMessage(), e);
+			showWarningMessage("Your account is not added to application DB. You can still continue to work. "
+					+ "However, you have relogin again once application ran again");
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			userKey = null;
+		}
+		return false;
 	}
 
 	/**

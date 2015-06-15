@@ -100,7 +100,6 @@ class MainFrame extends JFrame implements FrameCommand {
 		appMenu.add(appAddAccount);
 		appMenu.add(appMenuExit);
 
-		buildConfiguredAccountNamesAndDisplay();
 	}
 
 	/*
@@ -146,6 +145,7 @@ class MainFrame extends JFrame implements FrameCommand {
 			userNameLabel
 					.setBorder(new LineBorder(new Color(0, 0, 0), 1, false));
 			userAccPane.add(userNameLabel);
+			Main.reAuthenticateWithExistingAccount(acc);
 		}
 		userAccPane.repaint();
 		userAccPane.revalidate();

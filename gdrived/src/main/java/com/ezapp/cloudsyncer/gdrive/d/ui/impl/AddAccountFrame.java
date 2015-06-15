@@ -48,7 +48,7 @@ class AddAccountFrame extends JFrame implements Runnable {
 	private String oauthURLField = new String(
 			"Please wait while URL is generated.");
 	private JTextField oauthField;
-	
+
 	/**
 	 * Self instance
 	 */
@@ -100,9 +100,11 @@ class AddAccountFrame extends JFrame implements Runnable {
 			public void actionPerformed(ActionEvent e) {
 				LOGGER.info("Got key!!");
 				String clientKey = oauthField.getText();
-				Main.buildCredential(clientKey);
-				clientKey = null;
-				self.dispose();
+				if (Main.buildCredentialAndPersist(clientKey)) {
+					clientKey = null;
+					self.dispose();
+				}
+				oauthField.setText("");
 			}
 		});
 

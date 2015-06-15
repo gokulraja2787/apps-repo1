@@ -6,6 +6,7 @@ import java.util.Arrays;
 import org.apache.logging.log4j.Logger;
 
 import com.ezapp.cloudsyncer.gdrive.d.Main;
+import com.ezapp.cloudsyncer.gdrive.d.exceptions.AppGDriveException;
 import com.ezapp.cloudsyncer.gdrive.d.log.LogManager;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
@@ -92,11 +93,36 @@ public class DriveUtil {
 	}
 
 	/**
+	 * 
+	 * @param userId
+	 * @throws AppGDriveException
+	 */
+	public void reOAauth(String userId) throws AppGDriveException {
+		try {
+			System.out.println("is flow null? " + flow == null);
+			accountCredential = flow.loadCredential(userId);
+
+		} catch (IOException e) {
+			LOGGER.error(
+					"Exception while generating credentials! " + e.getMessage(),
+					e);
+			throw new AppGDriveException("Invalid authentication token");
+		} catch (Exception e) {
+			LOGGER.error(
+					"Exception while generating credentials! " + e.getMessage(),
+					e);
+			throw new AppGDriveException(e);
+		}
+	}
+	
+	/**
 	 * Builds google credentials
 	 * 
 	 * @param authorizationCode
+	 * @throws AppGDriveException
 	 */
-	public void buildCredentials(String authorizationCode) {
+	public void buildCredentials(String authorizationCode)
+			throws AppGDriveException {
 		GoogleTokenResponse tokenResponse;
 		try {
 			tokenResponse = flow.newTokenRequest(authorizationCode)
@@ -108,6 +134,7 @@ public class DriveUtil {
 			LOGGER.error(
 					"Exception while generating credentials! " + e.getMessage(),
 					e);
+			throw new AppGDriveException("Invalid authentication token");
 		} finally {
 			authorizationCode = null;
 			tokenResponse = null;

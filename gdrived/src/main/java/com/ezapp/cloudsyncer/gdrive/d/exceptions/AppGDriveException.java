@@ -1,25 +1,26 @@
 package com.ezapp.cloudsyncer.gdrive.d.exceptions;
 
 /**
- * Exception definition for DB
+ * Exception definition for GDrive API
  * 
- * Date: May 30, 2015
+ * Date: June 13, 2015
  * 
  * @author gokul
  *
  */
-public class AppDBException extends Exception {
+public class AppGDriveException extends Exception {
 
 	/**
-	 * Serial Number
+	 * Serial number
 	 */
-	private static final long serialVersionUID = 6704851169650410432L;
+	private static final long serialVersionUID = -6988002657401809482L;
 
 	/**
 	 * 
 	 */
-	public AppDBException() {
+	public AppGDriveException() {
 		super();
+		// TODO Auto-generated constructor stub
 	}
 
 	/**
@@ -28,7 +29,7 @@ public class AppDBException extends Exception {
 	 * @param enableSuppression
 	 * @param writableStackTrace
 	 */
-	public AppDBException(String message, Throwable cause,
+	public AppGDriveException(String message, Throwable cause,
 			boolean enableSuppression, boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
 	}
@@ -37,21 +38,21 @@ public class AppDBException extends Exception {
 	 * @param message
 	 * @param cause
 	 */
-	public AppDBException(String message, Throwable cause) {
+	public AppGDriveException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
 	/**
 	 * @param message
 	 */
-	public AppDBException(String message) {
+	public AppGDriveException(String message) {
 		super(message);
 	}
 
 	/**
 	 * @param cause
 	 */
-	public AppDBException(Throwable cause) {
+	public AppGDriveException(Throwable cause) {
 		super(cause);
 	}
 
