@@ -6,7 +6,9 @@ import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import com.ezapp.cloudsyncer.gdrive.d.db.AppDB;
 import com.ezapp.cloudsyncer.gdrive.d.db.impl.AppDBFactory;
@@ -17,12 +19,16 @@ import com.ezapp.cloudsyncer.gdrive.d.vo.Account;
  * @author gokul
  *
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TestAppDB {
 
 	/**
 	 * DB
 	 */
 	private AppDB appDB;
+
+	private String appConfigValues[] = { "Test value 1", "Test value 2" };
+	private String appConfigKey = "Test Key";
 
 	/**
 	 * @throws java.lang.Exception
@@ -44,7 +50,7 @@ public class TestAppDB {
 	 * Test if appconfig exist
 	 */
 	@Test
-	public void testIfAppConfigExist() {
+	public void test1IfAppConfigExist() {
 		if (null == appDB) {
 			fail("No DB Connection");
 		} else {
@@ -54,7 +60,7 @@ public class TestAppDB {
 					assertTrue("App config Does exist", true);
 				} else {
 					assertTrue("App config Doesn't exist", true);
-					appDB.checkAndCreateBasicSchema();
+					appDB.reCreateBasicSchema();
 					result = appDB.isAppConfigExist();
 					if (result) {
 						assertTrue("App config Does exist", true);
@@ -73,7 +79,7 @@ public class TestAppDB {
 	 * Test insert account
 	 */
 	@Test
-	public void testInsertAccount() {
+	public void test2InsertAccount() {
 		if (null == appDB) {
 			fail("No DB Connection");
 		} else {
@@ -105,4 +111,89 @@ public class TestAppDB {
 		}
 	}
 
+	/**
+	 * Test add app config
+	 */
+	@Test
+	public void test3AddAppConfig() {
+		if (null == appDB) {
+			fail("No DB Connection");
+		} else {
+			try {
+				appDB.addAppConfig(appConfigKey, appConfigValues);
+			} catch (AppDBException e) {
+				e.printStackTrace(System.err);
+				fail(e.getMessage() + " failed!!");
+			}
+		}
+	}
+
+	/**
+	 * Test get app config
+	 */
+	@Test
+	public void test4GetAppConfig() {
+		if (null == appDB) {
+			fail("No DB Connection");
+		} else {
+			try {
+				String[] vals = appDB.getValues(appConfigKey);
+				for(String v : vals) {
+					System.out.println(v);
+				}
+				assertFalse(
+						"Either no values found or app config values doesn't match",
+						(null == vals || vals.length != appConfigValues.length));
+			} catch (AppDBException e) {
+				e.printStackTrace();
+				fail(e.getMessage() + " failed!!");
+			}
+		}
+	}
+	
+	/**
+	 * Test update app config value
+	 */
+	@Test
+	public void test5UpdateAppConfig() {
+		if (null == appDB) {
+			fail("No DB Connection");
+		} else {
+			try {
+				appDB.updateAppConfig(appConfigKey, 1, "Updated Value");
+				String vals[] = appDB.getValues(appConfigKey);
+				for(String v : vals) {
+					System.out.println(v);
+				}
+				assertFalse(
+						"Either no values found or app config values doesn't match",
+						(null == vals || vals.length != appConfigValues.length));
+				assertFalse("Updated Failed!", (null == vals) || !vals[1].equals(appConfigValues[1]));
+			} catch (AppDBException e) {
+				e.printStackTrace();
+				fail(e.getMessage() + " failed!!");
+			}
+		}
+	}
+	
+	/**
+	 * Test delete app config
+	 */
+	@Test
+	public void test6DeleteAppConfig() {
+		if (null == appDB) {
+			fail("No DB Connection");
+		} else {
+			try {
+				appDB.deleteAppConfig(appConfigKey);
+				String vals[] = appDB.getValues(appConfigKey);
+				assertFalse(
+						"Delete failed",
+						(null != vals && vals.length != 0));
+			} catch (AppDBException e) {
+				e.printStackTrace();
+				fail(e.getMessage() + " failed!!");
+			}
+		}
+	}
 }

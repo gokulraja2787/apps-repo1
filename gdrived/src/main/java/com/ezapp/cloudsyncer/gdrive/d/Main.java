@@ -80,12 +80,12 @@ public class Main {
 				.getContextClassLoader()
 				.getResource(
 						"com/ezapp/cloudsyncer/gdrive/d/images/app-ico.png");
-		runnerUI.start();
 		runnerUI.setImageIco(fileUrl);
 		SysTray.initSysTray();
 		String oauthURL = driveUtil.getOAuthHttpURL();
 		runnerUI.setOAuthURL(oauthURL);
 		runnerUI.updateUserAccountConfig();
+		runnerUI.start();
 		LOGGER.info("App initialized");
 	}
 
@@ -104,7 +104,7 @@ public class Main {
 			appDB = AppDBFactory.getInstance().getAppDBInstance();
 			if (!appDB.isAppConfigExist()) {
 				LOGGER.info("Initializing appconfig in schema");
-				appDB.checkAndCreateBasicSchema();
+				appDB.reCreateBasicSchema();
 			}
 		} catch (AppDBException e) {
 			LOGGER.error("DB Initialization failure: " + e.getMessage(), e);

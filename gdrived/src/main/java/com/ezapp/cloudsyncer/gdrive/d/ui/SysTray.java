@@ -13,8 +13,11 @@ import java.net.URL;
 import javax.swing.ImageIcon;
 
 import org.apache.logging.log4j.Logger;
+import org.omg.CORBA.ContextList;
 
 import com.ezapp.cloudsyncer.gdrive.d.Main;
+import com.ezapp.cloudsyncer.gdrive.d.db.impl.AppDBFactory;
+import com.ezapp.cloudsyncer.gdrive.d.exceptions.AppDBException;
 import com.ezapp.cloudsyncer.gdrive.d.log.LogManager;
 
 /**
@@ -34,6 +37,11 @@ public class SysTray {
 	 * Application context listener
 	 */
 	private static GdrivedContextListener applicationContextListener = new GdrivedContextListener();
+	
+	/**
+	 * Theme context listener
+	 */
+	private static ThemeContextListner themeContextListner = new ThemeContextListner();
 
 	/**
 	 * Sets up System Tray
@@ -56,8 +64,12 @@ public class SysTray {
 					GdrivedContextListener.ACTION_COMMAND.EXIT.getValue());
 			MenuItem toggleShowHideItm = new MenuItem(
 					GdrivedContextListener.ACTION_COMMAND.SHOW_HIDE.getValue());
+			PopupMenu configMenuItem = new PopupMenu(GdrivedContextListener.ACTION_COMMAND.CONFIG.getValue());
+			PopupMenu themeItem = new PopupMenu(GdrivedContextListener.ACTION_COMMAND.THEME.getValue());
 			popup.add(addActItem);
 			popup.add(toggleShowHideItm);
+			configMenuItem.add(themeItem);
+			popup.add(configMenuItem);
 			popup.add(exitItem);
 			toggleShowHideItm.addActionListener(applicationContextListener);
 			toggleShowHideItm
@@ -70,6 +82,13 @@ public class SysTray {
 			exitItem.addActionListener(applicationContextListener);
 			exitItem.setActionCommand(GdrivedContextListener.ACTION_COMMAND.EXIT
 					.getValue());
+			String[] vals = RunnerUIFactory.getImpls();
+			for(String val : vals) {
+				MenuItem item = new MenuItem(val);
+				item.addActionListener(themeContextListner);
+				item.setActionCommand(val);
+				themeItem.add(item);
+			}
 			TrayIcon trayIcon = new TrayIcon(image,
 					"gdrive-d: Cloud syncer for Google drive", popup);
 			trayIcon.setImageAutoSize(true);
@@ -109,6 +128,14 @@ class GdrivedContextListener implements ActionListener {
 		 * Add account
 		 */
 		ADD_ACCOUNT("Add Account"),
+		/**
+		 * Configure
+		 */
+		CONFIG("Configure"),
+		/**
+		 * Theme
+		 */
+		THEME("Theme"),
 		/**
 		 * Exit
 		 */
@@ -158,4 +185,26 @@ class GdrivedContextListener implements ActionListener {
 		}
 	}
 
+}
+
+/**
+ * Theme context listener
+ * 
+ * @author grangarajan
+ *
+ */
+class ThemeContextListner implements ActionListener {
+	
+	/*
+	 * (non-Javadoc)
+	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	 */
+	public void actionPerformed(ActionEvent evt) {
+		String command = evt.getActionCommand();
+		try {
+			String[] vals = AppDBFactory.getInstance().getAppDBInstance().getValues(command);
+		} catch (AppDBException e) {
+			
+		}
+	}
 }
