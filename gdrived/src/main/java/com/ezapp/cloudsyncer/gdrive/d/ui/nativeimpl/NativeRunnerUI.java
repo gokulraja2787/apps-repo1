@@ -17,13 +17,24 @@ import com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI;
  */
 class NativeRunnerUI implements RunnerUI {
 
+	/**
+	 * Main frame
+	 */
 	private MainFrame mainFrame;
 
+	/**
+	 * Add account frame
+	 */
+	private AddAccountFrame addAccountFrame;
+	/**
+	 * Logger
+	 */
 	private static final Logger LOGGER = LogManager
 			.getLogger(NativeRunnerUI.class);
 
 	NativeRunnerUI() {
 		mainFrame = new MainFrame();
+		addAccountFrame = new AddAccountFrame(mainFrame.getDisplay());
 	}
 
 	/*
@@ -44,6 +55,14 @@ class NativeRunnerUI implements RunnerUI {
 	 * @see com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#shutdown(int)
 	 */
 	public int shutdown(int statusCode) {
+		if (null != addAccountFrame) {
+			try {
+				addAccountFrame.close();
+			} catch (Exception e) {
+				LOGGER.warn("Error while closing instance: " + e.getMessage(),
+						e);
+			}
+		}
 		if (null != mainFrame) {
 			try {
 				mainFrame.close();
@@ -62,7 +81,9 @@ class NativeRunnerUI implements RunnerUI {
 	 * com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#setOAuthURL(java.lang.String)
 	 */
 	public void setOAuthURL(String url) {
-		// TODO Auto-generated method stub
+		if (null != addAccountFrame) {
+			addAccountFrame.setOAuthURL(url);
+		}
 
 	}
 
@@ -72,11 +93,12 @@ class NativeRunnerUI implements RunnerUI {
 	 * @see com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#setImageIco(java.net.URL)
 	 */
 	public void setImageIco(URL url) {
-		System.out.println("Set image");
 		if (null != mainFrame) {
 			mainFrame.setAppImageIcon(url);
 		}
-
+		if (null != addAccountFrame) {
+			addAccountFrame.setAppImageIcon(url);
+		}
 	}
 
 	/*
@@ -85,7 +107,9 @@ class NativeRunnerUI implements RunnerUI {
 	 * @see com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#openAddAccountWindow()
 	 */
 	public void openAddAccountWindow() {
-		// TODO Auto-generated method stub
+		if (null != addAccountFrame) {
+			addAccountFrame.openAndStart();
+		}
 
 	}
 

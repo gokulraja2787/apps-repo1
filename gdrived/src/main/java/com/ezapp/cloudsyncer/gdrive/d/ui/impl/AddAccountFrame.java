@@ -82,7 +82,7 @@ class AddAccountFrame extends JFrame implements Runnable {
 		lblOpenTheGenerated.setHorizontalAlignment(SwingConstants.CENTER);
 		lblOpenTheGenerated.setFont(new Font("Tahoma", Font.PLAIN, 14));
 
-		JButton btnLogin = new JButton("Authentical using a google credential");
+		JButton btnLogin = new JButton("Authentical using a Google credential");
 		btnLogin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				LOGGER.info("Opening browser");
@@ -108,66 +108,94 @@ class AddAccountFrame extends JFrame implements Runnable {
 			}
 		});
 
+		JButton btnCancel = new JButton("Cancel");
+		btnCancel.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				self.dispose();
+			}
+		});
+
 		oauthField = new JTextField();
 		oauthField.setColumns(10);
 		GroupLayout groupLayout = new GroupLayout(getContentPane());
 		groupLayout
 				.setHorizontalGroup(groupLayout
-						.createParallelGroup(Alignment.LEADING)
+						.createParallelGroup(Alignment.TRAILING)
 						.addGroup(
 								groupLayout
 										.createSequentialGroup()
+										.addContainerGap()
 										.addGroup(
 												groupLayout
 														.createParallelGroup(
-																Alignment.LEADING)
+																Alignment.TRAILING)
 														.addGroup(
 																groupLayout
-																		.createSequentialGroup()
-																		.addContainerGap()
+																		.createParallelGroup(
+																				Alignment.LEADING)
 																		.addComponent(
 																				lblOpenTheGenerated,
 																				GroupLayout.DEFAULT_SIZE,
-																				364,
-																				Short.MAX_VALUE))
-														.addGroup(
-																groupLayout
-																		.createSequentialGroup()
-																		.addGap(77)
-																		.addComponent(
-																				btnLogin))
-														.addGroup(
-																groupLayout
-																		.createSequentialGroup()
-																		.addContainerGap()
-																		.addComponent(
-																				lblPaste)
-																		.addPreferredGap(
-																				ComponentPlacement.RELATED)
+																				376,
+																				Short.MAX_VALUE)
 																		.addGroup(
 																				groupLayout
-																						.createParallelGroup(
-																								Alignment.LEADING)
+																						.createSequentialGroup()
+																						.addGap(65)
 																						.addComponent(
-																								btnAddAccount)
-																						.addComponent(
-																								oauthField,
-																								GroupLayout.DEFAULT_SIZE,
-																								243,
-																								Short.MAX_VALUE))))
-										.addContainerGap())
-						.addGroup(
-								Alignment.TRAILING,
-								groupLayout.createSequentialGroup()
-										.addContainerGap(105, Short.MAX_VALUE)
-										.addComponent(lblGdrived).addGap(101)));
+																								btnLogin))
+																		.addGroup(
+																				groupLayout
+																						.createSequentialGroup()
+																						.addGroup(
+																								groupLayout
+																										.createParallelGroup(
+																												Alignment.LEADING)
+																										.addComponent(
+																												lblPaste)
+																										.addGroup(
+																												groupLayout
+																														.createSequentialGroup()
+																														.addGap(53)
+																														.addComponent(
+																																btnAddAccount)))
+																						.addGroup(
+																								groupLayout
+																										.createParallelGroup(
+																												Alignment.LEADING)
+																										.addGroup(
+																												groupLayout
+																														.createSequentialGroup()
+																														.addGap(7)
+																														.addComponent(
+																																oauthField,
+																																GroupLayout.DEFAULT_SIZE,
+																																195,
+																																Short.MAX_VALUE))
+																										.addGroup(
+																												groupLayout
+																														.createSequentialGroup()
+																														.addGap(18)
+																														.addComponent(
+																																btnCancel)))))
+														.addGroup(
+																groupLayout
+																		.createSequentialGroup()
+																		.addPreferredGap(
+																				ComponentPlacement.RELATED,
+																				82,
+																				GroupLayout.PREFERRED_SIZE)
+																		.addComponent(
+																				lblGdrived)
+																		.addGap(89)))
+										.addContainerGap()));
 		groupLayout
 				.setVerticalGroup(groupLayout
 						.createParallelGroup(Alignment.LEADING)
 						.addGroup(
 								groupLayout
 										.createSequentialGroup()
-										.addContainerGap()
+										.addGap(46)
 										.addComponent(lblGdrived)
 										.addPreferredGap(
 												ComponentPlacement.RELATED)
@@ -185,8 +213,16 @@ class AddAccountFrame extends JFrame implements Runnable {
 																GroupLayout.PREFERRED_SIZE,
 																GroupLayout.DEFAULT_SIZE,
 																GroupLayout.PREFERRED_SIZE))
-										.addGap(18).addComponent(btnAddAccount)
-										.addContainerGap(118, Short.MAX_VALUE)));
+										.addPreferredGap(
+												ComponentPlacement.UNRELATED)
+										.addGroup(
+												groupLayout
+														.createParallelGroup(
+																Alignment.BASELINE)
+														.addComponent(
+																btnAddAccount)
+														.addComponent(btnCancel))
+										.addContainerGap(125, Short.MAX_VALUE)));
 		getContentPane().setLayout(groupLayout);
 	}
 

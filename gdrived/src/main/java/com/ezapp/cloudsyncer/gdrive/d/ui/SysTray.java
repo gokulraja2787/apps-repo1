@@ -13,12 +13,10 @@ import java.net.URL;
 import javax.swing.ImageIcon;
 
 import org.apache.logging.log4j.Logger;
-import org.omg.CORBA.ContextList;
 
 import com.ezapp.cloudsyncer.gdrive.d.Main;
-import com.ezapp.cloudsyncer.gdrive.d.db.impl.AppDBFactory;
-import com.ezapp.cloudsyncer.gdrive.d.exceptions.AppDBException;
 import com.ezapp.cloudsyncer.gdrive.d.log.LogManager;
+import com.ezapp.cloudsyncer.gdrive.d.ui.event.listener.ThemeContextListener;
 
 /**
  * Unit responsible for Sys tray
@@ -37,11 +35,16 @@ public class SysTray {
 	 * Application context listener
 	 */
 	private static GdrivedContextListener applicationContextListener = new GdrivedContextListener();
-	
+
 	/**
 	 * Theme context listener
 	 */
-	private static ThemeContextListner themeContextListner = new ThemeContextListner();
+	private static ThemeContextListener themeContextListner = new ThemeContextListener();
+
+	/**
+	 * Tray icon
+	 */
+	private static TrayIcon trayIcon;
 
 	/**
 	 * Sets up System Tray
@@ -64,8 +67,10 @@ public class SysTray {
 					GdrivedContextListener.ACTION_COMMAND.EXIT.getValue());
 			MenuItem toggleShowHideItm = new MenuItem(
 					GdrivedContextListener.ACTION_COMMAND.SHOW_HIDE.getValue());
-			PopupMenu configMenuItem = new PopupMenu(GdrivedContextListener.ACTION_COMMAND.CONFIG.getValue());
-			PopupMenu themeItem = new PopupMenu(GdrivedContextListener.ACTION_COMMAND.THEME.getValue());
+			PopupMenu configMenuItem = new PopupMenu(
+					GdrivedContextListener.ACTION_COMMAND.CONFIG.getValue());
+			PopupMenu themeItem = new PopupMenu(
+					GdrivedContextListener.ACTION_COMMAND.THEME.getValue());
 			popup.add(addActItem);
 			popup.add(toggleShowHideItm);
 			configMenuItem.add(themeItem);
@@ -83,13 +88,13 @@ public class SysTray {
 			exitItem.setActionCommand(GdrivedContextListener.ACTION_COMMAND.EXIT
 					.getValue());
 			String[] vals = RunnerUIFactory.getImpls();
-			for(String val : vals) {
+			for (String val : vals) {
 				MenuItem item = new MenuItem(val);
 				item.addActionListener(themeContextListner);
 				item.setActionCommand(val);
 				themeItem.add(item);
 			}
-			TrayIcon trayIcon = new TrayIcon(image,
+			trayIcon = new TrayIcon(image,
 					"gdrive-d: Cloud syncer for Google drive", popup);
 			trayIcon.setImageAutoSize(true);
 			try {
@@ -101,6 +106,15 @@ public class SysTray {
 		} else {
 			LOGGER.warn("System Tray is not supported");
 		}
+	}
+
+	public static void shutDown() {
+		if (null != trayIcon && SystemTray.isSupported()) {
+			SystemTray tray = SystemTray.getSystemTray();
+			tray.remove(trayIcon);
+			trayIcon = null;
+		}
+
 	}
 
 }
@@ -180,31 +194,11 @@ class GdrivedContextListener implements ActionListener {
 				.equals(GdrivedContextListener.ACTION_COMMAND.ADD_ACCOUNT
 						.getValue())) {
 			Main.addAccount();
-		} else if (command.equals(GdrivedContextListener.ACTION_COMMAND.SHOW_HIDE.getValue())) {
+		} else if (command
+				.equals(GdrivedContextListener.ACTION_COMMAND.SHOW_HIDE
+						.getValue())) {
 			Main.toggleShowHideMainUI();
 		}
 	}
 
-}
-
-/**
- * Theme context listener
- * 
- * @author grangarajan
- *
- */
-class ThemeContextListner implements ActionListener {
-	
-	/*
-	 * (non-Javadoc)
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
-	public void actionPerformed(ActionEvent evt) {
-		String command = evt.getActionCommand();
-		try {
-			String[] vals = AppDBFactory.getInstance().getAppDBInstance().getValues(command);
-		} catch (AppDBException e) {
-			
-		}
-	}
 }

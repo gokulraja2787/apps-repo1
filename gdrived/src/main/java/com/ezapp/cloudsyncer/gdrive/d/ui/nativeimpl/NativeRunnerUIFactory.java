@@ -17,26 +17,20 @@ public class NativeRunnerUIFactory extends RunnerUIFactory {
 	private static NativeRunnerUIFactory selfInstance;
 
 	/**
-	 * UI Instance
-	 */
-	private static RunnerUI uiInstance;
-	
-	/**
 	 * Singleton
 	 */
 	private NativeRunnerUIFactory() {
-	
+
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUIFactory#getUIInstance()
 	 */
 	@Override
 	public RunnerUI getUIInstance() {
-		if(null == uiInstance) {
-			uiInstance = new NativeRunnerUI();
-		}
-		return uiInstance;
+		return new NativeRunnerUI();
 	}
 
 	/**
@@ -45,10 +39,10 @@ public class NativeRunnerUIFactory extends RunnerUIFactory {
 	 * @return self instance
 	 */
 	public static RunnerUIFactory getInstance() {
-		if(null == selfInstance) {
+		if (null == selfInstance) {
 			selfInstance = new NativeRunnerUIFactory();
 		}
 		return selfInstance;
 	}
-	
+
 }

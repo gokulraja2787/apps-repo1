@@ -73,7 +73,16 @@ public class Main {
 		initializeDB();
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Initializing.... UI!!!!");
-		}
+		}		
+		initUI();
+		LOGGER.info("App initialized");
+	}
+
+	/**
+	 * Initializes the UI
+	 */
+	private static void initUI() {
+		SysTray.initSysTray();
 		runnerUI = RunnerUIFactory.getInstance().getUIInstance();
 		URL fileUrl = Thread
 				.currentThread()
@@ -81,12 +90,10 @@ public class Main {
 				.getResource(
 						"com/ezapp/cloudsyncer/gdrive/d/images/app-ico.png");
 		runnerUI.setImageIco(fileUrl);
-		SysTray.initSysTray();
 		String oauthURL = driveUtil.getOAuthHttpURL();
 		runnerUI.setOAuthURL(oauthURL);
 		runnerUI.updateUserAccountConfig();
 		runnerUI.start();
-		LOGGER.info("App initialized");
 	}
 
 	/**
@@ -132,6 +139,7 @@ public class Main {
 		}
 		driveUtil.closeCleanUp();
 		driveUtil = null;
+		SysTray.shutDown();
 		System.exit(status);
 	}
 
@@ -274,7 +282,7 @@ public class Main {
 		}
 		return configuredAccounts;
 	}
-
+	
 	// TODO remove this method
 	private static void testAuth(Account account) {
 		LOGGER.info("Display Name: " + account.getUserName());
@@ -296,4 +304,13 @@ public class Main {
 		}
 	}
 
+	/**
+	 * Reinitialize entire UI
+	 */
+	public static void reInitUI() {
+		runnerUI.shutdown(0);
+		SysTray.shutDown();
+		initUI();
+	}
+	
 }

@@ -13,6 +13,8 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 
 import com.ezapp.cloudsyncer.gdrive.d.Main;
+import com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUIFactory;
+import com.ezapp.cloudsyncer.gdrive.d.ui.event.listener.ThemeContextListener;
 
 /**
  * Frame to hold main UI
@@ -51,7 +53,36 @@ class MainFrame {
 		mntmApplication.setMenu(menu_1);
 
 		MenuItem mntmAddAccount = new MenuItem(menu_1, SWT.NONE);
+		mntmAddAccount.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				Main.addAccount();
+			}
+		});
 		mntmAddAccount.setText("Add Account");
+
+		MenuItem mntmConfigureMenu = new MenuItem(menu_1, SWT.CASCADE);
+		mntmConfigureMenu.setText("Configure");
+
+		Menu menu_2 = new Menu(mntmConfigureMenu);
+		mntmConfigureMenu.setMenu(menu_2);
+
+		MenuItem mntmThemeSubmenu = new MenuItem(menu_2, SWT.CASCADE);
+		mntmThemeSubmenu.setText("Theme");
+
+		Menu menu_3 = new Menu(mntmThemeSubmenu);
+		mntmThemeSubmenu.setMenu(menu_3);
+
+		String[] impls = RunnerUIFactory.getImpls();
+		if (null != impls) {
+			ThemeContextListener listener = new ThemeContextListener();
+			for (String impl : impls) {
+				MenuItem mnuThItn = new MenuItem(menu_3, SWT.NONE);
+				mnuThItn.setText(impl);
+				mnuThItn.addSelectionListener(listener);
+			}
+			listener = null;
+		}
 
 		MenuItem mntmExit = new MenuItem(menu_1, SWT.NONE);
 		mntmExit.addSelectionListener(new SelectionAdapter() {
@@ -86,18 +117,34 @@ class MainFrame {
 	 */
 	public void close() {
 		if (null != display) {
-			display.close();
+			display.asyncExec(new Runnable() {
+
+				@Override
+				public void run() {
+					display.close();
+					if (null != shell && !shell.isDisposed()) {
+						shell.close();
+					}
+				}
+
+			});
 		}
-		if (null != shell && !shell.isDisposed()) {
-			shell.close();
-		}
-		display = null;
-		shell = null;
 	}
 
+	/**
+	 * Set app image icon
+	 * 
+	 * @param url
+	 */
 	public void setAppImageIcon(URL url) {
-		shell.setImage(SWTResourceManager.getImage(MainFrame.class,
-				url.toString()));
+		String urlloc = url.toString();
+		try {
+			urlloc = urlloc.substring(urlloc.indexOf("com/ezapp") - 1);
+		} catch (Exception e) {
+			urlloc = "/com/ezapp/cloudsyncer/gdrive/d/images/app-ico.png";
+		}
+
+		shell.setImage(SWTResourceManager.getImage(MainFrame.class, urlloc));
 	}
 
 	/**
@@ -116,5 +163,14 @@ class MainFrame {
 				}
 			});
 		}
+	}
+
+	/**
+	 * Get display
+	 * 
+	 * @return display
+	 */
+	Display getDisplay() {
+		return display;
 	}
 }

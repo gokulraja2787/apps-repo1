@@ -52,9 +52,8 @@ class SimpleRunnerUI implements RunnerUI {
 	 * @see com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#shutdown(int)
 	 */
 	public int shutdown(int statusCode) {
-		if (statusCode != 0) {
-			addAccountFrame.dispose();
-		}
+		addAccountFrame.dispose();
+		mainFrame.dispose();
 		return statusCode;
 	}
 

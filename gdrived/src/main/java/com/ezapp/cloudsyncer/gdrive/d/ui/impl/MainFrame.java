@@ -23,6 +23,8 @@ import org.apache.logging.log4j.Logger;
 
 import com.ezapp.cloudsyncer.gdrive.d.Main;
 import com.ezapp.cloudsyncer.gdrive.d.log.LogManager;
+import com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUIFactory;
+import com.ezapp.cloudsyncer.gdrive.d.ui.event.listener.ThemeContextListener;
 import com.ezapp.cloudsyncer.gdrive.d.vo.Account;
 
 /**
@@ -48,7 +50,7 @@ class MainFrame extends JFrame implements FrameCommand {
 	 * User account layout for userAccPane
 	 */
 	private GridLayout userAccLayout;
-
+	
 	/**
 	 * Logger
 	 */
@@ -98,6 +100,22 @@ class MainFrame extends JFrame implements FrameCommand {
 			}
 		});
 		appMenu.add(appAddAccount);
+		
+		JMenu mnConfigure = new JMenu("Configure");
+		appMenu.add(mnConfigure);
+		
+		JMenu mnThemeSubmenu = new JMenu("Theme");
+		ThemeContextListener themeContextListner = new ThemeContextListener();
+		String themes[] = RunnerUIFactory.getImpls();
+		if (null != themes) {
+			for (String theme : themes) {
+				JMenuItem mnThemeItem = new JMenuItem(theme);
+				mnThemeItem.setActionCommand(theme);
+				mnThemeItem.addActionListener(themeContextListner);
+				mnThemeSubmenu.add(mnThemeItem);
+			}
+		}
+		mnConfigure.add(mnThemeSubmenu);
 		appMenu.add(appMenuExit);
 
 	}

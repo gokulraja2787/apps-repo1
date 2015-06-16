@@ -12,11 +12,6 @@ import com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUIFactory;
 public class SimpleRunnerUIFactory extends RunnerUIFactory {
 
 	/**
-	 * Self Instance
-	 */
-	private static SimpleRunnerUIFactory selfInstance;
-
-	/**
 	 * UI Instance
 	 */
 	private static RunnerUI uiInstance;
@@ -32,10 +27,7 @@ public class SimpleRunnerUIFactory extends RunnerUIFactory {
 	 * @return SimpleRunnerFactory UI
 	 */
 	public static SimpleRunnerUIFactory getInstance() {
-		if (null == selfInstance) {
-			selfInstance = new SimpleRunnerUIFactory();
-		}
-		return selfInstance;
+		return new SimpleRunnerUIFactory();
 	}
 
 	/**
