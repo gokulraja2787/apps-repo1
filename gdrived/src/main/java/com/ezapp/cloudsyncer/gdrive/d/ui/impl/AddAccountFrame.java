@@ -86,9 +86,9 @@ class AddAccountFrame extends JFrame implements Runnable {
 		btnLogin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				LOGGER.info("Opening browser");
-				authBrowser = new SimpleBrowser();
-				authBrowser.openBrowser();
+				authBrowser = new SimpleBrowser(null);
 				authBrowser.openUrl(oauthURLField);
+				authBrowser.openBrowser();
 			}
 		});
 

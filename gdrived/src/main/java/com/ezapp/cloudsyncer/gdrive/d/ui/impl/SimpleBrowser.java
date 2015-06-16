@@ -3,11 +3,13 @@ package com.ezapp.cloudsyncer.gdrive.d.ui.impl;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.layout.FillLayout;
 
 import com.ezapp.cloudsyncer.gdrive.d.log.LogManager;
 
@@ -20,17 +22,22 @@ import com.ezapp.cloudsyncer.gdrive.d.log.LogManager;
 public class SimpleBrowser {
 
 	/**
+	 * Specifies shared display
+	 */
+	private boolean sharedDisplay = true;
+
+	/**
 	 * Shell to hold components
 	 */
-	private final Shell bshell;
+	private Shell bshell;
 	/**
 	 * HTTP, HTTPS browser
 	 */
-	private final Browser browser;
+	private Browser browser;
 	/**
 	 * Display to hold shell
 	 */
-	private final Display bdisplay;
+	private Display bdisplay;
 
 	/**
 	 * Holds LOGGER
@@ -39,17 +46,41 @@ public class SimpleBrowser {
 			.getLogger(SimpleBrowser.class);
 
 	/**
-	 * Initialize the browser
+	 * initUI
 	 */
-	public SimpleBrowser() {
-		bdisplay = new Display();
-		bshell = new Shell(bdisplay);
+	private void initUI() {
 		bshell.setText("Google Authenticate");
-		bshell.setSize(666, 542);
-		bshell.setLayout(new FillLayout(SWT.HORIZONTAL));
+		bshell.setSize(617, 558);
+		bshell.setLayout(null);
 		browser = new Browser(bshell, SWT.NONE);
+		browser.setBounds(0, 0, 618, 508);
+
+		Button btnCancel = new Button(bshell, SWT.NONE);
+		btnCancel.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				bdisplay.asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						if (!bshell.isDisposed()) {
+							bshell.close();
+						}
+					}
+				});
+			}
+		});
+		btnCancel.setBounds(261, 514, 88, 29);
+		btnCancel.setText("Cancel");
 		bshell.addListener(SWT.Dispose, new Listener() {
 
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see
+			 * org.eclipse.swt.widgets.Listener#handleEvent(org.eclipse.swt.
+			 * widgets.Event)
+			 */
+			@Override
 			public void handleEvent(Event event) {
 				close();
 			}
@@ -57,11 +88,37 @@ public class SimpleBrowser {
 	}
 
 	/**
+	 * 
+	 * @param display
+	 */
+	public SimpleBrowser(Display display) {
+		if (null == display) {
+			sharedDisplay = false;
+			display = new Display();
+		}
+		this.bdisplay = display;
+		this.bshell = new Shell(this.bdisplay);
+		initUI();
+	}
+
+	/**
 	 * Opens the browser window
 	 */
 	public void openBrowser() {
 		LOGGER.info("Opening browser window");
+		/*
+		 * bdisplay.asyncExec(new Runnable() {
+		 * 
+		 * @Override public void run() {
+		 */
+
 		bshell.open();
+		while (!bshell.isDisposed()) {
+			if (!bdisplay.readAndDispatch())
+				bdisplay.sleep();
+		}
+		// }
+		// });
 	}
 
 	/**
@@ -70,7 +127,7 @@ public class SimpleBrowser {
 	 * @param url
 	 */
 	public void openBrowser(String url) {
-		bshell.open();
+		openBrowser();
 		openUrl(url);
 	}
 
@@ -79,23 +136,23 @@ public class SimpleBrowser {
 	 * 
 	 * @param url
 	 */
-	public void openUrl(String url) {
+	public void openUrl(final String url) {
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Opening URL: " + url);
 		}
 		try {
-			bdisplay.wake();
-			browser.setUrl(url);
-			while (!bshell.isDisposed()) {
-				if (!bdisplay.readAndDispatch())
-					bdisplay.sleep();
-			}
+			// bdisplay.wake();
+			bdisplay.asyncExec(new Runnable() {
+
+				@Override
+				public void run() {
+					browser.setUrl(url);
+
+				}
+			});
+
 		} catch (Exception e) {
 			LOGGER.error("Error while opeing URL: " + e.getMessage(), e);
-		} finally {
-			if (!bshell.isDisposed()) {
-				bshell.dispose();
-			}
 		}
 	}
 
@@ -103,7 +160,9 @@ public class SimpleBrowser {
 	 * Close the browser
 	 */
 	public void close() {
-		bdisplay.dispose();
+		if (null != bdisplay && !sharedDisplay) {
+			bdisplay.dispose();
+		}
 	}
 
 	/**
@@ -114,5 +173,4 @@ public class SimpleBrowser {
 	public boolean isClosed() {
 		return (bdisplay == null || bdisplay.isDisposed());
 	}
-
 }

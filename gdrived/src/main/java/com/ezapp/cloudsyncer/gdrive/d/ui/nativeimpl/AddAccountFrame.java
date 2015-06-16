@@ -11,6 +11,8 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 
+import com.ezapp.cloudsyncer.gdrive.d.ui.impl.SimpleBrowser;
+
 /**
  * Add account UI
  * 
@@ -76,6 +78,21 @@ class AddAccountFrame {
 				.setText("In order to start using gdrive cloud syncer you need to login to google account first. Click on the below button to authenticate using your google credential, then copy the code and paste it below.");
 
 		Button btnLogin = new Button(shell, SWT.NONE);
+		btnLogin.addSelectionListener(new SelectionAdapter() {
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see
+			 * org.eclipse.swt.events.SelectionAdapter#widgetSelected(org.eclipse
+			 * .swt.events.SelectionEvent)
+			 */
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				SimpleBrowser browser = new SimpleBrowser(self.display);
+				browser.openUrl(self.oauthURLField);
+				browser.openBrowser();
+			}
+		});
 		btnLogin.setBounds(10, 223, 380, 29);
 		btnLogin.setText("Authentical using a Google credential");
 
@@ -146,10 +163,6 @@ class AddAccountFrame {
 	public void setOAuthURL(String url) {
 		if (null != oauthURLField) {
 			oauthURLField = url;
-			/*
-			 * if (null != authBrowser && !authBrowser.isClosed()) {
-			 * authBrowser.openUrl(oauthURLField); }
-			 */
 		}
 	}
 
