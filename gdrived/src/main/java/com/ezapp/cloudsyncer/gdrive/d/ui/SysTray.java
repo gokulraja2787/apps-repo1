@@ -40,6 +40,8 @@ public class SysTray {
 	 * Theme context listener
 	 */
 	private static ThemeContextListener themeContextListner = new ThemeContextListener();
+	
+	private static boolean sysTrayInitialized = false;
 
 	/**
 	 * Tray icon
@@ -50,7 +52,7 @@ public class SysTray {
 	 * Sets up System Tray
 	 */
 	public static void initSysTray() {
-		if (SystemTray.isSupported()) {
+		if (!sysTrayInitialized && SystemTray.isSupported()) {
 			SystemTray tray = SystemTray.getSystemTray();
 			URL fileUrl = Thread
 					.currentThread()
@@ -99,6 +101,7 @@ public class SysTray {
 			trayIcon.setImageAutoSize(true);
 			try {
 				tray.add(trayIcon);
+				sysTrayInitialized = true;
 			} catch (AWTException e) {
 				LOGGER.error("Error while setting up tray: " + e.getMessage(),
 						e);
@@ -108,8 +111,11 @@ public class SysTray {
 		}
 	}
 
+	/**
+	 * Shuts down system tray
+	 */
 	public static void shutDown() {
-		if (null != trayIcon && SystemTray.isSupported()) {
+		if (sysTrayInitialized && null != trayIcon && SystemTray.isSupported()) {
 			SystemTray tray = SystemTray.getSystemTray();
 			tray.remove(trayIcon);
 			trayIcon = null;

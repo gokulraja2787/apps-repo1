@@ -1,20 +1,32 @@
 package com.ezapp.cloudsyncer.gdrive.d.ui.nativeimpl;
 
+import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 
 import com.ezapp.cloudsyncer.gdrive.d.Main;
+import com.ezapp.cloudsyncer.gdrive.d.log.LogManager;
 import com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUIFactory;
 import com.ezapp.cloudsyncer.gdrive.d.ui.event.listener.ThemeContextListener;
+import com.ezapp.cloudsyncer.gdrive.d.vo.Account;
+
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.FormLayout;
+import org.eclipse.swt.layout.FormData;
+import org.eclipse.swt.layout.FormAttachment;
 
 /**
  * Frame to hold main UI
@@ -36,12 +48,22 @@ class MainFrame {
 	 */
 	private Display display;
 
+	/**
+	 * Holds user accounts
+	 */
+	private Composite usrAccPane;
+
+	/**
+	 * Logger
+	 */
+	private static final Logger LOGGER = LogManager.getLogger(MainFrame.class);
+
 	MainFrame() {
 		display = new Display();
 		shell = new Shell(display);
 		shell.setText("gdrive-d Cloud Syncer");
 		shell.setSize(429, 387);
-		shell.setLayout(null);
+		shell.setLayout(new FormLayout());
 
 		Menu menu = new Menu(shell, SWT.BAR);
 		shell.setMenuBar(menu);
@@ -92,6 +114,8 @@ class MainFrame {
 			}
 		});
 		mntmExit.setText("Exit");
+
+		initAccPane();
 		shell.addListener(SWT.Close, new Listener() {
 
 			public void handleEvent(Event event) {
@@ -102,13 +126,55 @@ class MainFrame {
 	}
 
 	/**
+	 * Initializes acc pane
+	 */
+	private void initAccPane() {
+		usrAccPane = new Composite(shell, SWT.BORDER);
+		FormData fd_usrAccPane = new FormData();
+		fd_usrAccPane.bottom = new FormAttachment(0, 319);
+		fd_usrAccPane.right = new FormAttachment(0, 403);
+		fd_usrAccPane.top = new FormAttachment(0, 77);
+		fd_usrAccPane.left = new FormAttachment(0, 10);
+		usrAccPane.setLayoutData(fd_usrAccPane);
+		GridLayout gl_usrAccPane = new GridLayout(1, false);
+		gl_usrAccPane.verticalSpacing = 2;
+		usrAccPane.setLayout(gl_usrAccPane);
+
+		List<Account> userAccounts = Main.getConfiguredAccounts();
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Number of accounts found: " + userAccounts.size());
+		}
+		for (Account acc : userAccounts) {
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("Adding " + acc.getUserEmail());
+			}
+			String url = acc.getPictureUrl();
+			if (null != url && !url.equals("")) {
+				Label picLbl = new Label(usrAccPane, SWT.BORDER);
+				try {
+					picLbl.setImage(SWTResourceManager.getImage(new URL(url)
+							.openStream()));
+				} catch (IOException e) {
+					LOGGER.error("Failed to draw immage: " + e.getMessage(), e);
+				}
+			}
+			Label userLbl = new Label(usrAccPane, SWT.BORDER | SWT.WRAP);
+			userLbl.setText(acc.getUserEmail());
+		}
+		shell.redraw();
+		shell.layout(true);
+	}
+
+	/**
 	 * Opens the shell
 	 */
 	public void openAndStart() {
-		shell.open();
-		while (!shell.isDisposed()) {
-			if (!display.readAndDispatch())
-				display.sleep();
+		if (null != display) {
+			shell.open();
+			while (null != shell && !shell.isDisposed()) {
+				if (!display.readAndDispatch())
+					display.sleep();
+			}
 		}
 	}
 
@@ -116,18 +182,16 @@ class MainFrame {
 	 * Closes display & shell
 	 */
 	public void close() {
+		SWTResourceManager.dispose();
 		if (null != display) {
-			display.asyncExec(new Runnable() {
-
-				@Override
-				public void run() {
-					display.close();
-					if (null != shell && !shell.isDisposed()) {
-						shell.close();
-					}
-				}
-
-			});
+			if (null != shell && !shell.isDisposed()) {
+				shell.close();
+			}
+			if (null != display && !display.isDisposed()) {
+				display.dispose();
+			}
+			shell = null;
+			display = null;
 		}
 	}
 
@@ -143,8 +207,23 @@ class MainFrame {
 		} catch (Exception e) {
 			urlloc = "/com/ezapp/cloudsyncer/gdrive/d/images/app-ico.png";
 		}
+		final String urlLc = urlloc;
+		if (null != display && !display.isDisposed()) {
+			display.asyncExec(new Runnable() {
 
-		shell.setImage(SWTResourceManager.getImage(MainFrame.class, urlloc));
+				/*
+				 * (non-Javadoc)
+				 * 
+				 * @see java.lang.Runnable#run()
+				 */
+				@Override
+				public void run() {
+					shell.setImage(SWTResourceManager.getImage(MainFrame.class,
+							urlLc));
+
+				}
+			});
+		}
 	}
 
 	/**
@@ -172,5 +251,13 @@ class MainFrame {
 	 */
 	Display getDisplay() {
 		return display;
+	}
+
+	/**
+	 * Update configured account
+	 */
+	public void updateConfiguredAccounts() {
+		usrAccPane.dispose();
+		initAccPane();
 	}
 }

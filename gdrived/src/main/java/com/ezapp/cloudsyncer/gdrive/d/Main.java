@@ -260,8 +260,6 @@ public class Main {
 			LOGGER.error("Error while testing auth: " + e.getMessage(), e);
 			showWarningMessage("Your account is not added to application DB. You can still continue to work. "
 					+ "However, you have relogin again once application ran again");
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} finally {
 			userKey = null;
 		}
@@ -309,7 +307,6 @@ public class Main {
 	 */
 	public static void reInitUI() {
 		runnerUI.shutdown(0);
-		SysTray.shutDown();
 		initUI();
 	}
 	

@@ -26,6 +26,7 @@ class NativeRunnerUI implements RunnerUI {
 	 * Add account frame
 	 */
 	private AddAccountFrame addAccountFrame;
+
 	/**
 	 * Logger
 	 */
@@ -71,6 +72,8 @@ class NativeRunnerUI implements RunnerUI {
 						e);
 			}
 		}
+		addAccountFrame = null;
+		mainFrame = null;
 		return 0;
 	}
 
@@ -130,8 +133,12 @@ class NativeRunnerUI implements RunnerUI {
 	 * com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#showError(java.lang.String)
 	 */
 	public void showError(String message) {
-		// TODO Auto-generated method stub
-
+		AppDialog dialog = new AppDialog(mainFrame.getDisplay()
+				.getActiveShell());
+		dialog.setTitle("Error");
+		dialog.setIcon("/com/ezapp/cloudsyncer/gdrive/d/images/error.png");
+		dialog.setMessage(message);
+		dialog.open();
 	}
 
 	/*
@@ -141,7 +148,12 @@ class NativeRunnerUI implements RunnerUI {
 	 * com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#showWarning(java.lang.String)
 	 */
 	public void showWarning(String message) {
-		// TODO Auto-generated method stub
+		AppDialog dialog = new AppDialog(mainFrame.getDisplay()
+				.getActiveShell());
+		dialog.setTitle("Warning");
+		dialog.setIcon("/com/ezapp/cloudsyncer/gdrive/d/images/warning.png");
+		dialog.setMessage(message);
+		dialog.open();
 
 	}
 
@@ -152,7 +164,12 @@ class NativeRunnerUI implements RunnerUI {
 	 * com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#showInfo(java.lang.String)
 	 */
 	public void showInfo(String message) {
-		// TODO Auto-generated method stub
+		AppDialog dialog = new AppDialog(mainFrame.getDisplay()
+				.getActiveShell());
+		dialog.setTitle("Info");
+		dialog.setIcon("/com/ezapp/cloudsyncer/gdrive/d/images/info.png");
+		dialog.setMessage(message);
+		dialog.open();
 
 	}
 
@@ -162,7 +179,9 @@ class NativeRunnerUI implements RunnerUI {
 	 * @see com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#updateUserAccountConfig()
 	 */
 	public void updateUserAccountConfig() {
-		// TODO Auto-generated method stub
+		if(null != mainFrame) {
+			mainFrame.updateConfiguredAccounts();
+		}
 
 	}
 

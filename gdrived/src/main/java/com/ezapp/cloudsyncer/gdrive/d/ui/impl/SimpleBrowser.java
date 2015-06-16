@@ -50,7 +50,7 @@ public class SimpleBrowser {
 	 */
 	private void initUI() {
 		bshell.setText("Google Authenticate");
-		bshell.setSize(617, 558);
+		bshell.setSize(617, 590);
 		bshell.setLayout(null);
 		browser = new Browser(bshell, SWT.NONE);
 		browser.setBounds(0, 0, 618, 508);
@@ -70,7 +70,7 @@ public class SimpleBrowser {
 			}
 		});
 		btnCancel.setBounds(261, 514, 88, 29);
-		btnCancel.setText("Cancel");
+		btnCancel.setText("Close");
 		bshell.addListener(SWT.Dispose, new Listener() {
 
 			/*

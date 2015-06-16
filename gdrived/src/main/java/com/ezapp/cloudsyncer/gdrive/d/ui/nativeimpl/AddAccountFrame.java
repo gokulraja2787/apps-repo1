@@ -2,6 +2,7 @@ package com.ezapp.cloudsyncer.gdrive.d.ui.nativeimpl;
 
 import java.net.URL;
 
+import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
@@ -11,6 +12,8 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 
+import com.ezapp.cloudsyncer.gdrive.d.Main;
+import com.ezapp.cloudsyncer.gdrive.d.log.LogManager;
 import com.ezapp.cloudsyncer.gdrive.d.ui.impl.SimpleBrowser;
 
 /**
@@ -39,6 +42,12 @@ class AddAccountFrame {
 	private AddAccountFrame self;
 
 	/**
+	 * Logger
+	 */
+	private static final Logger LOGGER = LogManager
+			.getLogger(AddAccountFrame.class);
+
+	/**
 	 * Field to hold generated oauth URL
 	 */
 	private String oauthURLField = new String(
@@ -54,10 +63,15 @@ class AddAccountFrame {
 		initUI(display);
 	}
 
+	/**
+	 * Initializes UI
+	 * 
+	 * @param display
+	 */
 	private void initUI(Display display) {
 		shell = new Shell(display);
 		shell.setText("Add account");
-		shell.setSize(400, 399);
+		shell.setSize(416, 404);
 		shell.setLayout(null);
 
 		Label lblAddAccount = new Label(shell, SWT.NONE);
@@ -73,7 +87,7 @@ class AddAccountFrame {
 				SWT.NORMAL));
 		lblOpenTheGenerated.setForeground(SWTResourceManager
 				.getColor(SWT.COLOR_DARK_GRAY));
-		lblOpenTheGenerated.setBounds(10, 62, 380, 155);
+		lblOpenTheGenerated.setBounds(10, 62, 380, 129);
 		lblOpenTheGenerated
 				.setText("In order to start using gdrive cloud syncer you need to login to google account first. Click on the below button to authenticate using your google credential, then copy the code and paste it below.");
 
@@ -93,19 +107,37 @@ class AddAccountFrame {
 				browser.openBrowser();
 			}
 		});
-		btnLogin.setBounds(10, 223, 380, 29);
+		btnLogin.setBounds(10, 197, 380, 29);
 		btnLogin.setText("Authentical using a Google credential");
 
 		Label lblPaste = new Label(shell, SWT.NONE);
 		lblPaste.setForeground(SWTResourceManager.getColor(SWT.COLOR_DARK_GRAY));
-		lblPaste.setBounds(10, 280, 147, 17);
+		lblPaste.setBounds(10, 260, 115, 17);
 		lblPaste.setText("Paste the code here:");
 
 		oauthField = new Text(shell, SWT.BORDER);
-		oauthField.setBounds(144, 272, 246, 25);
+		oauthField.setBounds(144, 252, 246, 25);
 
 		Button btnAddAccount = new Button(shell, SWT.NONE);
-		btnAddAccount.setBounds(91, 329, 105, 29);
+		btnAddAccount.addSelectionListener(new SelectionAdapter() {
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see
+			 * org.eclipse.swt.events.SelectionAdapter#widgetSelected(org.eclipse
+			 * .swt.events.SelectionEvent)
+			 */
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				LOGGER.info("Got key!!");
+				String clientKey = oauthField.getText();
+				if (Main.buildCredentialAndPersist(clientKey)) {
+					clientKey = null;
+					self.close();
+				}
+			}
+		});
+		btnAddAccount.setBounds(91, 309, 105, 29);
 		btnAddAccount.setText("Add Account");
 
 		Button btnCancel = new Button(shell, SWT.NONE);
@@ -115,7 +147,7 @@ class AddAccountFrame {
 				self.close();
 			}
 		});
-		btnCancel.setBounds(202, 329, 88, 29);
+		btnCancel.setBounds(202, 309, 88, 29);
 		btnCancel.setText("Cancel");
 	}
 
@@ -127,11 +159,11 @@ class AddAccountFrame {
 
 			@Override
 			public void run() {
-				if (shell.isDisposed()) {
+				if (null == shell || shell.isDisposed()) {
 					initUI(display);
 				}
 				shell.open();
-				while (!shell.isDisposed()) {
+				while (null != shell && !shell.isDisposed()) {
 					if (!display.readAndDispatch())
 						display.sleep();
 				}
@@ -148,9 +180,10 @@ class AddAccountFrame {
 
 			@Override
 			public void run() {
-				if (!shell.isDisposed()) {
+				if (null != shell && !shell.isDisposed()) {
 					shell.close();
 				}
+				shell = null;
 			}
 		});
 	}
@@ -179,6 +212,22 @@ class AddAccountFrame {
 			urlloc = "/com/ezapp/cloudsyncer/gdrive/d/images/app-ico.png";
 		}
 
-		shell.setImage(SWTResourceManager.getImage(MainFrame.class, urlloc));
+		final String urlLc = urlloc;
+		if (null != display && !display.isDisposed()) {
+			display.asyncExec(new Runnable() {
+
+				/*
+				 * (non-Javadoc)
+				 * 
+				 * @see java.lang.Runnable#run()
+				 */
+				@Override
+				public void run() {
+					shell.setImage(SWTResourceManager.getImage(MainFrame.class,
+							urlLc));
+
+				}
+			});
+		}
 	}
 }
