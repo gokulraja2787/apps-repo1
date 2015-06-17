@@ -306,6 +306,11 @@ class AppDBLiteImpl implements AppDB {
 		// Delete User account
 		String DELETE_ACCOUNT = "DELETE FROM __USER_ACC WHERE USER_EMAIL = ?";
 
+		// Update user
+		String UPDATE_ACCOUNT = "UPDATE __USER_ACC "
+				+ "SET USER_NAME = ?, O_AUTH = ?, PIC_URL = ?"
+				+ "WHERE USER_EMAIL = ?";
+
 		// Insert app config key
 		String ADD_APP_CONFIG_KEY = "INSERT INTO __APPCONFIG (ID, KEY) VALUES (?, ?)";
 
@@ -702,6 +707,43 @@ class AppDBLiteImpl implements AppDB {
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("deleteAppConfig: End");
 		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ezapp.cloudsyncer.gdrive.d.db.AppDB#updateAccount(com.ezapp.cloudsyncer
+	 * .gdrive.d.vo.Account)
+	 */
+	@Override
+	public void updateAccount(Account account) throws AppDBException {
+		checkAndThrowNullDB();
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("updateAccount: Updating " + account.getUserEmail());
+		}
+		PreparedStatement statement = null;
+		try {
+			statement = connection.prepareStatement(QUERIES.UPDATE_ACCOUNT);
+			statement.setString(4, account.getUserEmail());
+			statement.setString(1, account.getUserName());
+			statement.setString(2, account.getAuthToken());
+			statement.setString(3, account.getPictureUrl());
+			statement.execute();
+
+		} catch (SQLException e) {
+			throw new AppDBException("Error while updating user info "
+					+ e.getMessage(), e);
+		} finally {
+			if (null != statement) {
+				try {
+					statement.close();
+				} catch (SQLException e) {
+				}
+			}
+			statement = null;
+		}
+
 	}
 
 }
