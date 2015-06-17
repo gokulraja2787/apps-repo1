@@ -73,7 +73,7 @@ public class Main {
 		initializeDB();
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Initializing.... UI!!!!");
-		}		
+		}
 		initUI();
 		LOGGER.info("App initialized");
 	}
@@ -191,15 +191,15 @@ public class Main {
 	 */
 	public static boolean reAuthenticateWithExistingAccount(Account userAccount) {
 		try {
-			driveUtil.reOAauth(userAccount.getUserEmail());
-//			testFiles(driveUtil.getDrive());
+			driveUtil.reOAauth(null);
+			testFiles(driveUtil.getDrive());
 			return true;
 		} catch (AppGDriveException e) {
 			showErrorMessage("Reauth failed: " + e.getMessage());
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Builds client credentials
 	 * 
@@ -212,7 +212,7 @@ public class Main {
 		User user;
 		Account account = null;
 		try {
-			driveUtil.buildCredentials(userKey);
+			driveUtil.buildCredentials(userKey, null);
 			drive = driveUtil.getDrive();
 			account = new Account();
 			about = drive.about().get().execute();
@@ -280,7 +280,7 @@ public class Main {
 		}
 		return configuredAccounts;
 	}
-	
+
 	// TODO remove this method
 	private static void testAuth(Account account) {
 		LOGGER.info("Display Name: " + account.getUserName());
@@ -309,5 +309,5 @@ public class Main {
 		runnerUI.shutdown(0);
 		initUI();
 	}
-	
+
 }

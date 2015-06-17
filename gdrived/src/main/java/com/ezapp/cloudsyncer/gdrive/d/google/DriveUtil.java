@@ -2,6 +2,7 @@ package com.ezapp.cloudsyncer.gdrive.d.google;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.apache.logging.log4j.Logger;
 
@@ -83,8 +84,8 @@ public class DriveUtil {
 
 		flow = new GoogleAuthorizationCodeFlow.Builder(httpTransport,
 				jsonFactory, CLIENT_ID, CLIENT_SECRET,
-				Arrays.asList(DriveScopes.DRIVE)).setAccessType("offline")
-				.setApprovalPrompt("auto").build();
+				Collections.singleton(DriveScopes.DRIVE)).setAccessType("offline")
+				.setApprovalPrompt("force").build();
 
 		String url = flow.newAuthorizationUrl().setRedirectUri(REDIRECT_URI)
 				.build();
@@ -99,9 +100,13 @@ public class DriveUtil {
 	 */
 	public void reOAauth(String userId) throws AppGDriveException {
 		try {
-			System.out.println("is flow null? " + flow == null);
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("Start reAuth");
+			}
+			if (null == flow) {
+				getOAuthHttpURL();
+			}
 			accountCredential = flow.loadCredential(userId);
-
 		} catch (IOException e) {
 			LOGGER.error(
 					"Exception while generating credentials! " + e.getMessage(),
@@ -114,21 +119,25 @@ public class DriveUtil {
 			throw new AppGDriveException(e);
 		}
 	}
-	
+
 	/**
 	 * Builds google credentials
 	 * 
 	 * @param authorizationCode
+	 * @param userId
 	 * @throws AppGDriveException
 	 */
-	public void buildCredentials(String authorizationCode)
+	public void buildCredentials(String authorizationCode, String userId)
 			throws AppGDriveException {
 		GoogleTokenResponse tokenResponse;
 		try {
+			if (null == flow) {
+				getOAuthHttpURL();
+			}
 			tokenResponse = flow.newTokenRequest(authorizationCode)
 					.setRedirectUri(REDIRECT_URI).execute();
 			accountCredential = flow.createAndStoreCredential(tokenResponse,
-					null);
+					userId);
 
 		} catch (IOException e) {
 			LOGGER.error(

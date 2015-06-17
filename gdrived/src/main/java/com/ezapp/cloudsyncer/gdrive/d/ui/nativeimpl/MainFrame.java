@@ -115,7 +115,6 @@ class MainFrame {
 		});
 		mntmExit.setText("Exit");
 
-		initAccPane();
 		shell.addListener(SWT.Close, new Listener() {
 
 			public void handleEvent(Event event) {
@@ -160,6 +159,7 @@ class MainFrame {
 			}
 			Label userLbl = new Label(usrAccPane, SWT.BORDER | SWT.WRAP);
 			userLbl.setText(acc.getUserEmail());
+			Main.reAuthenticateWithExistingAccount(acc);
 		}
 		shell.redraw();
 		shell.layout(true);
@@ -171,6 +171,7 @@ class MainFrame {
 	public void openAndStart() {
 		if (null != display) {
 			shell.open();
+			initAccPane();
 			while (null != shell && !shell.isDisposed()) {
 				if (!display.readAndDispatch())
 					display.sleep();
@@ -257,7 +258,18 @@ class MainFrame {
 	 * Update configured account
 	 */
 	public void updateConfiguredAccounts() {
-		usrAccPane.dispose();
+		if (null != usrAccPane) {
+			usrAccPane.dispose();
+		}
 		initAccPane();
+	}
+
+	/**
+	 * Sets display
+	 * 
+	 * @param display
+	 */
+	void setDisplay(Display display) {
+		this.display = display;
 	}
 }

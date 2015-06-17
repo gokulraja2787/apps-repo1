@@ -3,6 +3,8 @@ package com.ezapp.cloudsyncer.gdrive.d.ui.nativeimpl;
 import java.net.URL;
 
 import org.apache.logging.log4j.Logger;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 
 import com.ezapp.cloudsyncer.gdrive.d.log.LogManager;
 import com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI;
@@ -133,12 +135,28 @@ class NativeRunnerUI implements RunnerUI {
 	 * com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#showError(java.lang.String)
 	 */
 	public void showError(String message) {
-		AppDialog dialog = new AppDialog(mainFrame.getDisplay()
-				.getActiveShell());
+		AppDialog dialog = new AppDialog(getShell());
 		dialog.setTitle("Error");
 		dialog.setIcon("/com/ezapp/cloudsyncer/gdrive/d/images/error.png");
 		dialog.setMessage(message);
 		dialog.open();
+	}
+
+	/**
+	 * Gets shell for window
+	 * 
+	 * @return shell
+	 */
+	private Shell getShell() {
+		Shell shell = null;
+		if (null == mainFrame.getDisplay().getActiveShell()) {
+			Display display = mainFrame.getDisplay();
+			shell = new Shell(display);
+
+		} else {
+			shell = mainFrame.getDisplay().getActiveShell();
+		}
+		return shell;
 	}
 
 	/*
@@ -148,8 +166,7 @@ class NativeRunnerUI implements RunnerUI {
 	 * com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#showWarning(java.lang.String)
 	 */
 	public void showWarning(String message) {
-		AppDialog dialog = new AppDialog(mainFrame.getDisplay()
-				.getActiveShell());
+		AppDialog dialog = new AppDialog(getShell());
 		dialog.setTitle("Warning");
 		dialog.setIcon("/com/ezapp/cloudsyncer/gdrive/d/images/warning.png");
 		dialog.setMessage(message);
@@ -164,8 +181,7 @@ class NativeRunnerUI implements RunnerUI {
 	 * com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#showInfo(java.lang.String)
 	 */
 	public void showInfo(String message) {
-		AppDialog dialog = new AppDialog(mainFrame.getDisplay()
-				.getActiveShell());
+		AppDialog dialog = new AppDialog(getShell());
 		dialog.setTitle("Info");
 		dialog.setIcon("/com/ezapp/cloudsyncer/gdrive/d/images/info.png");
 		dialog.setMessage(message);
@@ -179,7 +195,7 @@ class NativeRunnerUI implements RunnerUI {
 	 * @see com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#updateUserAccountConfig()
 	 */
 	public void updateUserAccountConfig() {
-		if(null != mainFrame) {
+		if (null != mainFrame) {
 			mainFrame.updateConfiguredAccounts();
 		}
 
