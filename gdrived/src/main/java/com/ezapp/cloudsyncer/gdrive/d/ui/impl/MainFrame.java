@@ -26,6 +26,7 @@ import com.ezapp.cloudsyncer.gdrive.d.log.LogManager;
 import com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUIFactory;
 import com.ezapp.cloudsyncer.gdrive.d.ui.event.listener.ThemeContextListener;
 import com.ezapp.cloudsyncer.gdrive.d.vo.Account;
+import javax.swing.JSeparator;
 
 /**
  * Frame to hold main UI
@@ -115,7 +116,13 @@ class MainFrame extends JFrame implements FrameCommand {
 				mnThemeSubmenu.add(mnThemeItem);
 			}
 		}
+		
+		JMenuItem mntmConfigureAccounts = new JMenuItem("Configure Account(s)");
+		mnConfigure.add(mntmConfigureAccounts);
 		mnConfigure.add(mnThemeSubmenu);
+		
+		JSeparator separator = new JSeparator();
+		appMenu.add(separator);
 		appMenu.add(appMenuExit);
 
 	}
