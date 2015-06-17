@@ -4,13 +4,13 @@ import java.net.URL;
 
 import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 
 import com.ezapp.cloudsyncer.gdrive.d.Main;
 import com.ezapp.cloudsyncer.gdrive.d.log.LogManager;
@@ -53,6 +53,7 @@ class AddAccountFrame {
 	private String oauthURLField = new String(
 			"Please wait while URL is generated.");
 	private Text oauthField;
+	private Text userIdField;
 
 	/**
 	 * Construct Add Account frame
@@ -71,7 +72,7 @@ class AddAccountFrame {
 	private void initUI(Display display) {
 		shell = new Shell(display);
 		shell.setText("Add account");
-		shell.setSize(416, 404);
+		shell.setSize(416, 411);
 		shell.setLayout(null);
 
 		Label lblAddAccount = new Label(shell, SWT.NONE);
@@ -112,11 +113,11 @@ class AddAccountFrame {
 
 		Label lblPaste = new Label(shell, SWT.NONE);
 		lblPaste.setForeground(SWTResourceManager.getColor(SWT.COLOR_DARK_GRAY));
-		lblPaste.setBounds(10, 260, 115, 17);
+		lblPaste.setBounds(10, 268, 115, 17);
 		lblPaste.setText("Paste the code here:");
 
 		oauthField = new Text(shell, SWT.BORDER);
-		oauthField.setBounds(144, 252, 246, 25);
+		oauthField.setBounds(144, 260, 246, 25);
 
 		Button btnAddAccount = new Button(shell, SWT.NONE);
 		btnAddAccount.addSelectionListener(new SelectionAdapter() {
@@ -131,13 +132,14 @@ class AddAccountFrame {
 			public void widgetSelected(SelectionEvent e) {
 				LOGGER.info("Got key!!");
 				String clientKey = oauthField.getText();
-				if (Main.buildCredentialAndPersist(clientKey)) {
+				String userId = userIdField.getText();
+				if (Main.buildCredentialAndPersist(clientKey, userId)) {
 					clientKey = null;
 					self.close();
 				}
 			}
 		});
-		btnAddAccount.setBounds(91, 309, 105, 29);
+		btnAddAccount.setBounds(91, 317, 105, 29);
 		btnAddAccount.setText("Add Account");
 
 		Button btnCancel = new Button(shell, SWT.NONE);
@@ -147,8 +149,16 @@ class AddAccountFrame {
 				self.close();
 			}
 		});
-		btnCancel.setBounds(202, 309, 88, 29);
+		btnCancel.setBounds(202, 317, 88, 29);
 		btnCancel.setText("Cancel");
+		
+		Label lblEnterTheAccount = new Label(shell, SWT.NONE);
+		lblEnterTheAccount.setText("Enter the google user id:");
+		lblEnterTheAccount.setForeground(SWTResourceManager.getColor(128, 128, 128));
+		lblEnterTheAccount.setBounds(10, 240, 128, 17);
+		
+		userIdField = new Text(shell, SWT.BORDER);
+		userIdField.setBounds(144, 232, 246, 25);
 	}
 
 	/**

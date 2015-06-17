@@ -37,6 +37,14 @@ public interface AppDB {
 	 * @throws AppDBException
 	 */
 	public void addAccount(Account account) throws AppDBException;
+	
+	/**
+	 * Update account
+	 * 
+	 * @param account
+	 * @throws AppDBException
+	 */
+	public void updateAccount(Account account) throws AppDBException;
 
 	/**
 	 * Get all account from the database

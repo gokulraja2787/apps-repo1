@@ -196,7 +196,16 @@ class NativeRunnerUI implements RunnerUI {
 	 */
 	public void updateUserAccountConfig() {
 		if (null != mainFrame) {
-			mainFrame.updateConfiguredAccounts();
+			Display display = mainFrame.getDisplay();
+			if(null != display && !display.isDisposed()) {
+				display.asyncExec(new Runnable() {
+					
+					@Override
+					public void run() {
+						mainFrame.updateConfiguredAccounts();
+					}
+				});
+			}
 		}
 
 	}
