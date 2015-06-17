@@ -19,7 +19,6 @@ import com.ezapp.cloudsyncer.gdrive.d.vo.Account;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.Drive.Files;
 import com.google.api.services.drive.model.About;
-import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.User;
 
@@ -191,11 +190,12 @@ public class Main {
 	 */
 	public static boolean reAuthenticateWithExistingAccount(Account userAccount) {
 		try {
-			driveUtil.reOAauth(null);
+			driveUtil.reOAauth(userAccount);
 			testFiles(driveUtil.getDrive());
 			return true;
 		} catch (AppGDriveException e) {
-			showErrorMessage("Reauth failed: " + e.getMessage());
+			showErrorMessage("Reauth failed! Maybe authentication expired. Re-login required for "
+					+ userAccount.getUserEmail());
 		}
 		return false;
 	}
@@ -204,20 +204,21 @@ public class Main {
 	 * Builds client credentials
 	 * 
 	 * @param userKey
-	 * @return
+	 * @param userId
+	 * @return user account
 	 */
-	public static Account buildCredential(String userKey) {
+	public static Account buildCredential(String userKey, String userId) {
 		Drive drive;
 		About about;
 		User user;
 		Account account = null;
 		try {
-			driveUtil.buildCredentials(userKey, null);
+			String refToken = driveUtil.buildCredentials(userKey, userId);
 			drive = driveUtil.getDrive();
 			account = new Account();
 			about = drive.about().get().execute();
 			user = about.getUser();
-			account.setAuthToken(userKey);
+			account.setAuthToken(refToken);
 			account.setUserName(user.getDisplayName());
 			account.setUserEmail(user.getEmailAddress());
 			if (null != user.getPicture()) {
@@ -225,7 +226,6 @@ public class Main {
 			}
 
 			// TODO remove below two lines
-			testAuth(account);
 			testFiles(drive);
 			return account;
 		} catch (IOException e) {
@@ -247,10 +247,12 @@ public class Main {
 	 * Builds client credentials and add the built credentials to Database
 	 * 
 	 * @param userKey
+	 * @param userId
 	 */
-	public static boolean buildCredentialAndPersist(String userKey) {
+	public static boolean buildCredentialAndPersist(String userKey,
+			String userId) {
 		try {
-			Account account = buildCredential(userKey);
+			Account account = buildCredential(userKey, userId);
 			if (null != account) {
 				appDB.addAccount(account);
 				runnerUI.updateUserAccountConfig();
@@ -282,21 +284,15 @@ public class Main {
 	}
 
 	// TODO remove this method
-	private static void testAuth(Account account) {
-		LOGGER.info("Display Name: " + account.getUserName());
-		LOGGER.info("Email : " + account.getUserEmail());
-	}
-
-	// TODO remove this method
 	private static void testFiles(Drive drive) {
 		Files files = drive.files();
 		FileList fileList;
 		try {
+			About about = drive.about().get().execute();
+			User user = about.getUser();
+			LOGGER.info("Display Name: " + user.getDisplayName());
 			fileList = files.list().execute();
-			for (File file : fileList.getItems()) {
-				LOGGER.info("Name " + file.getOriginalFilename() + " size "
-						+ file.getFileSize() + " type " + file.getKind());
-			}
+			LOGGER.info("File count: " + fileList.getItems().size());
 		} catch (IOException e) {
 			LOGGER.error(e.getMessage(), e);
 		}
@@ -308,6 +304,24 @@ public class Main {
 	public static void reInitUI() {
 		runnerUI.shutdown(0);
 		initUI();
+	}
+
+	/**
+	 * Deletes account
+	 * 
+	 * @param email
+	 */
+	public static void deleteAccount(String email) {
+		if (null != appDB) {
+			try {
+				appDB.deleteAccount(email);
+				runnerUI.updateUserAccountConfig();
+				showInfoMessage(email + " removed");
+			} catch (AppDBException e) {
+				runnerUI.showError(email + " delete failed");
+				LOGGER.error(e.getMessage(), e);
+			}
+		}
 	}
 
 }

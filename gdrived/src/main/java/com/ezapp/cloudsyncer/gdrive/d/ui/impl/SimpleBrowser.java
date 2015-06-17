@@ -50,7 +50,7 @@ public class SimpleBrowser {
 	 */
 	private void initUI() {
 		bshell.setText("Google Authenticate");
-		bshell.setSize(617, 590);
+		bshell.setSize(647, 590);
 		bshell.setLayout(null);
 		browser = new Browser(bshell, SWT.NONE);
 		browser.setBounds(0, 0, 618, 508);

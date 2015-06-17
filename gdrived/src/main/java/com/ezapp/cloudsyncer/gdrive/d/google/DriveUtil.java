@@ -1,21 +1,30 @@
 package com.ezapp.cloudsyncer.gdrive.d.google;
 
+//import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.logging.log4j.Logger;
 
 import com.ezapp.cloudsyncer.gdrive.d.Main;
 import com.ezapp.cloudsyncer.gdrive.d.exceptions.AppGDriveException;
 import com.ezapp.cloudsyncer.gdrive.d.log.LogManager;
+import com.ezapp.cloudsyncer.gdrive.d.vo.Account;
 import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.auth.oauth2.TokenRequest;
+import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
+import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
+//import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 
@@ -28,6 +37,10 @@ import com.google.api.services.drive.DriveScopes;
  *
  */
 public class DriveUtil {
+
+	private static final List<String> SCOPE_LIST = Arrays.asList(
+			DriveScopes.DRIVE, DriveScopes.DRIVE_FILE,
+			DriveScopes.DRIVE_METADATA, DriveScopes.DRIVE_APPDATA);
 
 	/**
 	 * Logger
@@ -49,6 +62,7 @@ public class DriveUtil {
 	 * Authorization flow
 	 */
 	private GoogleAuthorizationCodeFlow flow;
+	private GoogleAuthorizationCodeFlow.Builder flowBuilder;
 
 	/**
 	 * Credential
@@ -82,10 +96,23 @@ public class DriveUtil {
 	 */
 	public String getOAuthHttpURL() {
 
-		flow = new GoogleAuthorizationCodeFlow.Builder(httpTransport,
-				jsonFactory, CLIENT_ID, CLIENT_SECRET,
-				Collections.singleton(DriveScopes.DRIVE)).setAccessType("offline")
-				.setApprovalPrompt("force").build();
+		flowBuilder = new GoogleAuthorizationCodeFlow.Builder(httpTransport,
+				jsonFactory, CLIENT_ID, CLIENT_SECRET, SCOPE_LIST)
+				.setAccessType("offline").setApprovalPrompt("auto");
+		// File credFile = new File("outh2.json");
+		// try {
+		// if (!credFile.exists()) {
+		// credFile.createNewFile();
+		// }
+		// FileDataStoreFactory credStorefactory = new FileDataStoreFactory(
+		// credFile);
+		// flowBuilder.setDataStoreFactory(credStorefactory);
+		// } catch (IOException e) {
+		// LOGGER.error("Cred file creation error: " + e.getMessage(), e);
+		// } finally {
+		// credFile = null;
+		// }
+		flow = flowBuilder.build();
 
 		String url = flow.newAuthorizationUrl().setRedirectUri(REDIRECT_URI)
 				.build();
@@ -94,19 +121,40 @@ public class DriveUtil {
 	}
 
 	/**
+	 * Generate OAuth HTTP URL for Reauthentication
+	 */
+	public void generateOAuthHttpURLForReauth() {
+		flowBuilder = new GoogleAuthorizationCodeFlow.Builder(httpTransport,
+				jsonFactory, CLIENT_ID, CLIENT_SECRET, SCOPE_LIST);
+		flow = flowBuilder.build();
+	}
+
+	/**
 	 * 
-	 * @param userId
+	 * @param userAccount
 	 * @throws AppGDriveException
 	 */
-	public void reOAauth(String userId) throws AppGDriveException {
+	public void reOAauth(Account userAccount) throws AppGDriveException {
+		TokenResponse tokenResponse = null;
 		try {
 			if (LOGGER.isDebugEnabled()) {
 				LOGGER.debug("Start reAuth");
+				LOGGER.debug("Finding credential: "
+						+ userAccount.getUserEmail());
 			}
-			if (null == flow) {
-				getOAuthHttpURL();
-			}
-			accountCredential = flow.loadCredential(userId);
+			generateOAuthHttpURLForReauth();
+			TokenRequest tokenRequest = new TokenRequest(flow.getTransport(),
+					flow.getJsonFactory(), new GenericUrl(
+							flow.getTokenServerEncodedUrl()), "refresh_token");
+			Map<String, Object> unknownFields = new TreeMap<String, Object>();
+			unknownFields.put("refresh_token", userAccount.getAuthToken());
+			unknownFields.put("client_id", CLIENT_ID);
+			unknownFields.put("client_secret", CLIENT_SECRET);
+			tokenRequest.setUnknownKeys(unknownFields);
+			System.out.println(tokenRequest.toString());
+			tokenResponse = tokenRequest.execute();
+			accountCredential = flow.createAndStoreCredential(tokenResponse,
+					userAccount.getUserEmail());
 		} catch (IOException e) {
 			LOGGER.error(
 					"Exception while generating credentials! " + e.getMessage(),
@@ -117,6 +165,8 @@ public class DriveUtil {
 					"Exception while generating credentials! " + e.getMessage(),
 					e);
 			throw new AppGDriveException(e);
+		} finally {
+			tokenResponse = null;
 		}
 	}
 
@@ -125,19 +175,28 @@ public class DriveUtil {
 	 * 
 	 * @param authorizationCode
 	 * @param userId
+	 * @return refresh Token
 	 * @throws AppGDriveException
 	 */
-	public void buildCredentials(String authorizationCode, String userId)
+	public String buildCredentials(String authorizationCode, String userId)
 			throws AppGDriveException {
 		GoogleTokenResponse tokenResponse;
+		String refToken = null;
 		try {
 			if (null == flow) {
 				getOAuthHttpURL();
 			}
 			tokenResponse = flow.newTokenRequest(authorizationCode)
 					.setRedirectUri(REDIRECT_URI).execute();
+
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug(tokenResponse.getTokenType());
+				LOGGER.debug(new Date(tokenResponse.getExpiresInSeconds()));
+			}
+
 			accountCredential = flow.createAndStoreCredential(tokenResponse,
 					userId);
+			refToken = tokenResponse.getRefreshToken();
 
 		} catch (IOException e) {
 			LOGGER.error(
@@ -148,6 +207,7 @@ public class DriveUtil {
 			authorizationCode = null;
 			tokenResponse = null;
 		}
+		return refToken;
 	}
 
 	/**

@@ -96,6 +96,11 @@ public class SysTray {
 				item.setActionCommand(val);
 				themeItem.add(item);
 			}
+			popup.addSeparator();
+			MenuItem temm = new MenuItem("Delete my gmail account");
+			temm.addActionListener(applicationContextListener);
+			temm.setActionCommand("DELETE");
+			popup.add(temm);
 			trayIcon = new TrayIcon(image,
 					"gdrive-d: Cloud syncer for Google drive", popup);
 			trayIcon.setImageAutoSize(true);
@@ -204,6 +209,8 @@ class GdrivedContextListener implements ActionListener {
 				.equals(GdrivedContextListener.ACTION_COMMAND.SHOW_HIDE
 						.getValue())) {
 			Main.toggleShowHideMainUI();
+		} else { // TODO remove this block
+			Main.deleteAccount("gokulraja2006@gmail.com");
 		}
 	}
 
