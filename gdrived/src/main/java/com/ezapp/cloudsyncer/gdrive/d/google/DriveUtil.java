@@ -5,9 +5,12 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.logging.log4j.Logger;
 
 import com.ezapp.cloudsyncer.gdrive.d.Main;
@@ -15,11 +18,10 @@ import com.ezapp.cloudsyncer.gdrive.d.exceptions.AppGDriveException;
 import com.ezapp.cloudsyncer.gdrive.d.log.LogManager;
 import com.ezapp.cloudsyncer.gdrive.d.vo.Account;
 import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.auth.oauth2.TokenRequest;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
+import com.google.api.client.googleapis.auth.oauth2.GoogleRefreshTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
-import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -143,15 +145,9 @@ public class DriveUtil {
 						+ userAccount.getUserEmail());
 			}
 			generateOAuthHttpURLForReauth();
-			TokenRequest tokenRequest = new TokenRequest(flow.getTransport(),
-					flow.getJsonFactory(), new GenericUrl(
-							flow.getTokenServerEncodedUrl()), "refresh_token");
-			Map<String, Object> unknownFields = new TreeMap<String, Object>();
-			unknownFields.put("refresh_token", userAccount.getAuthToken());
-			unknownFields.put("client_id", CLIENT_ID);
-			unknownFields.put("client_secret", CLIENT_SECRET);
-			tokenRequest.setUnknownKeys(unknownFields);
-			System.out.println(tokenRequest.toString());
+			GoogleRefreshTokenRequest tokenRequest = new GoogleRefreshTokenRequest(
+					flow.getTransport(), flow.getJsonFactory(),
+					userAccount.getAuthToken(), CLIENT_ID, CLIENT_SECRET);
 			tokenResponse = tokenRequest.execute();
 			accountCredential = flow.createAndStoreCredential(tokenResponse,
 					userAccount.getUserEmail());
@@ -193,7 +189,6 @@ public class DriveUtil {
 				LOGGER.debug(tokenResponse.getTokenType());
 				LOGGER.debug(new Date(tokenResponse.getExpiresInSeconds()));
 			}
-
 			accountCredential = flow.createAndStoreCredential(tokenResponse,
 					userId);
 			refToken = tokenResponse.getRefreshToken();
@@ -228,5 +223,38 @@ public class DriveUtil {
 	protected void finalize() throws Throwable {
 		closeCleanUp();
 		super.finalize();
+	}
+
+	/**
+	 * Revokes token for the given account
+	 * 
+	 * @param account
+	 * @return
+	 */
+	public boolean revokeToken(Account account) {
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Start revokeToken");
+			LOGGER.debug("Finding credential: " + account.getUserEmail());
+		}
+		GoogleTokenResponse tokenResponse = null;
+		try {
+			generateOAuthHttpURLForReauth();
+			GoogleRefreshTokenRequest request = new GoogleRefreshTokenRequest(
+					flow.getTransport(), flow.getJsonFactory(),
+					account.getAuthToken(), CLIENT_ID, CLIENT_SECRET);
+			tokenResponse = request.execute();
+			String accToken = tokenResponse.getAccessToken();
+			LOGGER.info("Revoke token: " + accToken);
+			String uri = "https://accounts.google.com/o/oauth2/revoke?token="
+					+ accToken;
+			HttpClient httpClient = new DefaultHttpClient();
+			HttpGet httpGet = new HttpGet(uri);
+			HttpResponse httpResponse = httpClient.execute(httpGet);
+			StatusLine status = httpResponse.getStatusLine();
+			LOGGER.debug("Removed status: " + status);
+		} catch (IOException e) {
+			LOGGER.error("Failed to revoke token " + e.getMessage(), e);
+		}
+		return false;
 	}
 }
