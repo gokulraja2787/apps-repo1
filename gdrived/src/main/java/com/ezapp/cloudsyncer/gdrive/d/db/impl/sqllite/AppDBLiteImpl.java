@@ -216,6 +216,7 @@ class AppDBLiteImpl implements AppDB {
 			} else {
 				statement.setString(4, null);
 			}
+			statement.setString(5, account.getUserId());
 			statement.execute();
 		} catch (SQLException e) {
 			LOGGER.error(
@@ -293,15 +294,15 @@ class AppDBLiteImpl implements AppDB {
 		// Create account table
 		String CREATE_ACCOUNT_TABLE = "CREATE TABLE __USER_ACC ("
 				+ "USER_EMAIL TEXT PRIMARY KEY NOT NULL,"
-				+ "USER_NAME TEXT NOT NULL," + "O_AUTH TEXT NOT NULL,"
-				+ "PIC_URL DEFAULT TEXT)";
+				+ "USER_NAME TEXT NOT NULL, O_AUTH TEXT NOT NULL,"
+				+ "PIC_URL DEFAULT TEXT, USER_ID TEXT UNIQUE NOT NULL)";
 
 		// Insert an account
-		String INSERT_INTO_ACCOUNT = "INSERT INTO __USER_ACC "
-				+ "VALUES (?, ?, ?, ?)";
+		String INSERT_INTO_ACCOUNT = "INSERT INTO __USER_ACC (USER_EMAIL, USER_NAME, O_AUTH, PIC_URL, USER_ID)"
+				+ "VALUES (?, ?, ?, ?, ?)";
 
 		// Query to get all accounts
-		String SELECT_ALL_ACCOUNT = "SELECT USER_EMAIL, USER_NAME, O_AUTH, PIC_URL FROM __USER_ACC";
+		String SELECT_ALL_ACCOUNT = "SELECT USER_EMAIL, USER_NAME, O_AUTH, PIC_URL, USER_ID FROM __USER_ACC";
 
 		// Delete User account
 		String DELETE_ACCOUNT = "DELETE FROM __USER_ACC WHERE USER_EMAIL = ?";
@@ -344,8 +345,8 @@ class AppDBLiteImpl implements AppDB {
 		// Query to check if value exist to given key
 		String CHECK_APP_CONFIG_KEY_VALUE = "SELECT CASE RES "
 				+ "WHEN 0 THEN 'FALSE' ELSE 'TRUE' END AS 'VLD' FROM ("
-				+ "SELECT COUNT(*) AS 'RES' FROM __APPCONFIG_VALUE "
-				+ "WHERE " + "ID = ? AND VALUE = ?)";
+				+ "SELECT COUNT(*) AS 'RES' FROM __APPCONFIG_VALUE " + "WHERE "
+				+ "ID = ? AND VALUE = ?)";
 
 	}
 
@@ -371,6 +372,7 @@ class AppDBLiteImpl implements AppDB {
 				account.setUserName(resultSet.getString("USER_NAME"));
 				account.setUserEmail(resultSet.getString("USER_EMAIL"));
 				account.setPictureUrl(resultSet.getString("PIC_URL"));
+				account.setUserId(resultSet.getString("USER_ID"));
 				accountList.add(account);
 			}
 		} catch (SQLException e) {
@@ -775,7 +777,7 @@ class AppDBLiteImpl implements AppDB {
 			statement.setInt(1, id);
 			statement.setString(2, value);
 			result = statement.executeQuery();
-			if(result.next()) {
+			if (result.next()) {
 				return result.getBoolean("VLD");
 			} else {
 				return false;

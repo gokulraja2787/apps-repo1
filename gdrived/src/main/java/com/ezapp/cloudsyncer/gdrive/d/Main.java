@@ -191,7 +191,7 @@ public class Main {
 	public static boolean reAuthenticateWithExistingAccount(Account userAccount) {
 		try {
 			driveUtil.reOAauth(userAccount);
-			testFiles(driveUtil.getDrive());
+			testFiles(driveUtil.getDrive(userAccount.getUserId()));
 			return true;
 		} catch (AppGDriveException e) {
 			showErrorMessage("Reauth failed! Maybe authentication expired. Re-login required for "
@@ -214,7 +214,7 @@ public class Main {
 		Account account = null;
 		try {
 			String refToken = driveUtil.buildCredentials(userKey, userId);
-			drive = driveUtil.getDrive();
+			drive = driveUtil.getDrive(userId);
 			account = new Account();
 			about = drive.about().get().execute();
 			user = about.getUser();
@@ -224,6 +224,7 @@ public class Main {
 			if (null != user.getPicture()) {
 				account.setPictureUrl(user.getPicture().getUrl());
 			}
+			account.setUserId(userId);
 
 			// TODO remove below two lines
 			testFiles(drive);

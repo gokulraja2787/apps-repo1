@@ -4,7 +4,9 @@ package com.ezapp.cloudsyncer.gdrive.d.google;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
@@ -40,6 +42,9 @@ import com.google.api.services.drive.DriveScopes;
  */
 public class DriveUtil {
 
+	/**
+	 * Holds scope list
+	 */
 	private static final List<String> SCOPE_LIST = Arrays.asList(
 			DriveScopes.DRIVE, DriveScopes.DRIVE_FILE,
 			DriveScopes.DRIVE_METADATA, DriveScopes.DRIVE_APPDATA);
@@ -67,26 +72,38 @@ public class DriveUtil {
 	private GoogleAuthorizationCodeFlow.Builder flowBuilder;
 
 	/**
-	 * Credential
+	 * User drive map
 	 */
-	private Credential accountCredential;
+	private Map<String, UserDriveStructure> userDriveMap = new HashMap<String, DriveUtil.UserDriveStructure>();
 
 	/**
-	 * Drive
+	 * Gets drive of give user id
+	 * 
+	 * @param userId
+	 * @return
 	 */
-	private static Drive drive;
-
-	public Drive getDrive() {
-		if (null == drive) {
-			if (null == accountCredential) {
+	public Drive getDrive(String userId) {
+		Drive drive = null;
+		UserDriveStructure driveStruct = userDriveMap.get(userId);
+		if (null != driveStruct) {
+			if (null == driveStruct.accountCredential) {
 				LOGGER.error("Credential is null!! Add account first!!");
 				Main.showErrorMessage("Add account first!!");
+			} else {
+				if (null == driveStruct.drive) {
+					Drive.Builder builder = new Drive.Builder(httpTransport,
+							jsonFactory, driveStruct.accountCredential);
+					builder.setApplicationName(APPLICATION_NAME);
+					drive = builder.build();
+					builder = null;
+					driveStruct.drive = drive;
+				} else {
+					drive = driveStruct.drive;
+				}
 			}
-			Drive.Builder builder = new Drive.Builder(httpTransport,
-					jsonFactory, accountCredential);
-			builder.setApplicationName(APPLICATION_NAME);
-			drive = builder.build();
-			builder = null;
+		} else {
+			LOGGER.error("Credential is null!! Add account first!!");
+			Main.showErrorMessage("Add account first!!");
 		}
 		return drive;
 	}
@@ -149,8 +166,15 @@ public class DriveUtil {
 					flow.getTransport(), flow.getJsonFactory(),
 					userAccount.getAuthToken(), CLIENT_ID, CLIENT_SECRET);
 			tokenResponse = tokenRequest.execute();
-			accountCredential = flow.createAndStoreCredential(tokenResponse,
-					userAccount.getUserEmail());
+			UserDriveStructure driveStruct = userDriveMap.get(userAccount
+					.getUserId());
+			if (null == driveStruct) {
+				driveStruct = new UserDriveStructure();
+				userDriveMap.put(userAccount.getUserId(), driveStruct);
+			}
+			Credential accountCredential = flow.createAndStoreCredential(
+					tokenResponse, userAccount.getUserEmail());
+			driveStruct.accountCredential = accountCredential;
 		} catch (IOException e) {
 			LOGGER.error(
 					"Exception while generating credentials! " + e.getMessage(),
@@ -189,10 +213,12 @@ public class DriveUtil {
 				LOGGER.debug(tokenResponse.getTokenType());
 				LOGGER.debug(new Date(tokenResponse.getExpiresInSeconds()));
 			}
-			accountCredential = flow.createAndStoreCredential(tokenResponse,
-					userId);
+			UserDriveStructure driveStruct = new UserDriveStructure();
+			Credential accountCredential = flow.createAndStoreCredential(
+					tokenResponse, userId);
 			refToken = tokenResponse.getRefreshToken();
-
+			driveStruct.accountCredential = accountCredential;
+			userDriveMap.put(userId, driveStruct);
 		} catch (IOException e) {
 			LOGGER.error(
 					"Exception while generating credentials! " + e.getMessage(),
@@ -209,8 +235,7 @@ public class DriveUtil {
 	 * Cleans up object and close
 	 */
 	public void closeCleanUp() {
-		drive = null;
-		accountCredential = null;
+		userDriveMap.clear();
 		flow = null;
 	}
 
@@ -254,7 +279,23 @@ public class DriveUtil {
 			LOGGER.debug("Removed status: " + status);
 		} catch (IOException e) {
 			LOGGER.error("Failed to revoke token " + e.getMessage(), e);
+		} finally {
+			userDriveMap.remove(account.getUserId());
 		}
 		return false;
+	}
+
+	private class UserDriveStructure {
+
+		/**
+		 * Account credential
+		 */
+		private Credential accountCredential;
+
+		/**
+		 * Drive
+		 */
+		private Drive drive;
+
 	}
 }

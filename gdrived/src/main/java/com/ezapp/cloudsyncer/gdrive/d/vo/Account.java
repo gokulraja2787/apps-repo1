@@ -34,6 +34,11 @@ public class Account implements Serializable {
 	private String pictureUrl;
 
 	/**
+	 * Holds User Id
+	 */
+	private String userId;
+
+	/**
 	 * @return the userName
 	 */
 	public String getUserName() {
@@ -101,6 +106,21 @@ public class Account implements Serializable {
 	@Override
 	public String toString() {
 		return userName;
+	}
+
+	/**
+	 * @return the userId
+	 */
+	public String getUserId() {
+		return userId;
+	}
+
+	/**
+	 * @param userId
+	 *            the userId to set
+	 */
+	public void setUserId(String userId) {
+		this.userId = userId;
 	}
 
 }
