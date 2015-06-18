@@ -75,5 +75,10 @@ public interface RunnerUI {
 	 * Refreshes configured user accounts
 	 */
 	public void updateUserAccountConfig();
+	
+	/**
+	 * Open configuration window
+	 */
+	public void openConfigurationFrame();
 
 }

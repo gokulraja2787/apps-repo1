@@ -88,6 +88,15 @@ class MainFrame {
 
 		Menu menu_2 = new Menu(mntmConfigureMenu);
 		mntmConfigureMenu.setMenu(menu_2);
+		
+		MenuItem mntmConfiguredAccounts = new MenuItem(menu_2, SWT.NONE);
+		mntmConfiguredAccounts.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				Main.configureAccount();
+			}
+		});
+		mntmConfiguredAccounts.setText("Configured Account(s)");
 
 		MenuItem mntmThemeSubmenu = new MenuItem(menu_2, SWT.CASCADE);
 		mntmThemeSubmenu.setText("Theme");
@@ -105,6 +114,8 @@ class MainFrame {
 			}
 			listener = null;
 		}
+		
+		new MenuItem(menu_1, SWT.SEPARATOR);
 
 		MenuItem mntmExit = new MenuItem(menu_1, SWT.NONE);
 		mntmExit.addSelectionListener(new SelectionAdapter() {

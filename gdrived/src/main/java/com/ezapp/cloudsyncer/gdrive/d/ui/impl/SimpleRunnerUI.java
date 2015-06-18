@@ -28,6 +28,10 @@ class SimpleRunnerUI implements RunnerUI {
 	 * Main frame
 	 */
 	private MainFrame mainFrame;
+	/**
+	 * Holds configure account frame
+	 */
+	private ConfigureAccountFrame configureAccountFrame;
 
 	/**
 	 * Initializes simple runner UI
@@ -35,6 +39,7 @@ class SimpleRunnerUI implements RunnerUI {
 	SimpleRunnerUI() {
 		mainFrame = new MainFrame();
 		addAccountFrame = new AddAccountFrame();
+		configureAccountFrame = new ConfigureAccountFrame();
 	}
 
 	/*
@@ -52,6 +57,7 @@ class SimpleRunnerUI implements RunnerUI {
 	 * @see com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#shutdown(int)
 	 */
 	public int shutdown(int statusCode) {
+		configureAccountFrame.dispose();
 		addAccountFrame.dispose();
 		mainFrame.dispose();
 		return statusCode;
@@ -80,6 +86,7 @@ class SimpleRunnerUI implements RunnerUI {
 		Image image = imageIcon.getImage();
 		mainFrame.setIconImage(image);
 		addAccountFrame.setIconImage(image);
+		configureAccountFrame.setIconImage(image);
 	}
 
 	/*
@@ -148,6 +155,16 @@ class SimpleRunnerUI implements RunnerUI {
 		FrameCommand mainFrameCommand = mainFrame;
 		mainFrameCommand.updateConfiguredAccounts();
 		mainFrameCommand = null;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#openConfigurationFrame()
+	 */
+	@Override
+	public void openConfigurationFrame() {
+		invokeLater(configureAccountFrame);
 	}
 
 }

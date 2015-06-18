@@ -100,8 +100,7 @@ public class Account implements Serializable {
 	 */
 	@Override
 	public String toString() {
-		return "Account [userName=" + userName + ", userEmail=" + userEmail
-				+ "]";
+		return userName;
 	}
 
 }
