@@ -52,7 +52,7 @@ class ConfigureAccountFrame {
 	private void initUI() {
 		shell = new Shell(display);
 		shell.setText("gdrive-d: Manager your accounts");
-		shell.setSize(433, 421);
+		shell.setSize(433, 441);
 		
 		Button btnClose = new Button(shell, SWT.NONE);
 		btnClose.addSelectionListener(new SelectionAdapter() {

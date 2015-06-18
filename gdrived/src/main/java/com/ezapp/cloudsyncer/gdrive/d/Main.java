@@ -309,13 +309,15 @@ public class Main {
 	/**
 	 * Deletes account
 	 * 
-	 * @param email
+	 * @param account
 	 */
-	public static void deleteAccount(String email) {
+	public static void deleteAccount(Account account) {
 		if (null != appDB) {
+			String email = account.getUserEmail();
 			try {
 				appDB.deleteAccount(email);
 				runnerUI.updateUserAccountConfig();
+				driveUtil.revokeToken(account);
 				showInfoMessage(email + " removed");
 			} catch (AppDBException e) {
 				runnerUI.showError(email + " delete failed");
@@ -323,12 +325,82 @@ public class Main {
 			}
 		}
 	}
-	
+
+	/**
+	 * Delete account by email
+	 * 
+	 * @param email
+	 */
+	public static void deleteAccount(String email) {
+		try {
+			List<Account> accounts = appDB.getAllAccounts();
+			if (null != accounts) {
+				for (Account account : appDB.getAllAccounts()) {
+					if (account.getUserEmail().equals(email)) {
+						deleteAccount(account);
+						break;
+					}
+				}
+			}
+		} catch (AppDBException e) {
+			LOGGER.error(e.getMessage(), e);
+			showErrorMessage("Account removal failed!");
+		}
+	}
+
 	/**
 	 * Open configure account window
 	 */
-	public static void configureAccount(){
+	public static void configureAccount() {
 		runnerUI.openConfigurationFrame();
+	}
+
+	/**
+	 * Holds app config key to mount dir.
+	 */
+	private static final String MOUNT_DIR_KEY = ".mount.dir";
+
+	/**
+	 * 
+	 * @param account
+	 * @return
+	 */
+	public static String getDirMount(Account account) {
+		String dirMounted = null;
+		String appValues[];
+		try {
+			dirMounted = ((appValues = appDB.getValues(account.getUserEmail()
+					+ MOUNT_DIR_KEY)) != null && appValues.length > 0) ? appValues[appValues.length - 1]
+					: "--";
+		} catch (AppDBException e) {
+			LOGGER.error("Error while fetching mount drive: " + e.getMessage(),
+					e);
+		}
+		return dirMounted;
+	}
+
+	/**
+	 * 
+	 * @param account
+	 * @param dir
+	 * @param oldDir
+	 * @return
+	 */
+	public static boolean setDirMount(Account account, String dir, String oldDir) {
+		String key = account.getUserEmail() + MOUNT_DIR_KEY;
+		try {
+			if (appDB.isAppConfigKeyValueExist(key, oldDir)) {
+				appDB.updateAppConfig(key, 1, dir);
+			} else {
+				appDB.addAppConfig(key, dir);
+			}
+		} catch (AppDBException e) {
+			String msg = "Error while saving configuration";
+			LOGGER.error(msg, e);
+			showErrorMessage(msg + e.getMessage());
+			return false;
+		}
+		return true;
 	}
 
 }

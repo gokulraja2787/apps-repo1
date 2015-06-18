@@ -69,7 +69,7 @@ class AddAccountFrame extends JFrame implements Runnable {
 	 */
 	AddAccountFrame() throws HeadlessException {
 		super("gdrive-d");
-		setTitle("Add Account");
+		setTitle("gdrive-d: Add Account");
 		self = this;
 
 		setSize(400, 367);
@@ -107,6 +107,7 @@ class AddAccountFrame extends JFrame implements Runnable {
 					self.dispose();
 				}
 				oauthField.setText("");
+				userIdField.setText("");
 			}
 		});
 
