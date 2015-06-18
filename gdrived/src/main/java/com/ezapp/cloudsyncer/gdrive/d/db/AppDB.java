@@ -37,7 +37,7 @@ public interface AppDB {
 	 * @throws AppDBException
 	 */
 	public void addAccount(Account account) throws AppDBException;
-	
+
 	/**
 	 * Update account
 	 * 
@@ -99,5 +99,17 @@ public interface AppDB {
 	 * @throws AppDBException
 	 */
 	public void deleteAppConfig(String key) throws AppDBException;
+
+	/**
+	 * Check if app config key & value exist
+	 * 
+	 * @param key
+	 * @param value
+	 * @return true if value exist else false. Note: If key doesn't exist then
+	 *         it creates the key
+	 * @throws AppDBException
+	 */
+	public boolean isAppConfigKeyValueExist(String key, String value)
+			throws AppDBException;
 
 }

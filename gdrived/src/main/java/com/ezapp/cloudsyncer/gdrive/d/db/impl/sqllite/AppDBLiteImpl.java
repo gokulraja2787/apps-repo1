@@ -341,6 +341,12 @@ class AppDBLiteImpl implements AppDB {
 		// Delete app config
 		String DELETE_APP_CONFIG = "DELETE FROM __APPCONFIG WHERE KEY = ?";
 
+		// Query to check if value exist to given key
+		String CHECK_APP_CONFIG_KEY_VALUE = "SELECT CASE RES "
+				+ "WHEN 0 THEN 'FALSE' ELSE 'TRUE' END AS 'VLD' FROM ("
+				+ "SELECT COUNT(*) AS 'RES' FROM __APPCONFIG_VALUE "
+				+ "WHERE " + "ID = ? AND VALUE = ?)";
+
 	}
 
 	/*
@@ -744,6 +750,56 @@ class AppDBLiteImpl implements AppDB {
 			statement = null;
 		}
 
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ezapp.cloudsyncer.gdrive.d.db.AppDB#isAppConfigKeyValueExist(java
+	 * .lang.String, java.lang.String)
+	 */
+	@Override
+	public boolean isAppConfigKeyValueExist(String key, String value)
+			throws AppDBException {
+		checkAndThrowNullDB();
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("isAppConfigKeyValueExist: " + key);
+		}
+		PreparedStatement statement = null;
+		ResultSet result = null;
+		try {
+			Integer id = getKeyId(key);
+			statement = connection
+					.prepareStatement(QUERIES.CHECK_APP_CONFIG_KEY_VALUE);
+			statement.setInt(1, id);
+			statement.setString(2, value);
+			result = statement.executeQuery();
+			if(result.next()) {
+				return result.getBoolean("VLD");
+			} else {
+				return false;
+			}
+		} catch (SQLException e) {
+			throw new AppDBException(
+					"Error while checking value for app config "
+							+ e.getMessage(), e);
+		} finally {
+			try {
+				if (null != result) {
+					result.close();
+				}
+				if (null != statement) {
+					statement.close();
+				}
+			} catch (SQLException e) {
+			}
+			result = null;
+			statement = null;
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("isAppConfigKeyValueExist: end");
+			}
+		}
 	}
 
 }
