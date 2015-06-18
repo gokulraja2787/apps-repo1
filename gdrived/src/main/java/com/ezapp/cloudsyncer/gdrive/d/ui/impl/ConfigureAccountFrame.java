@@ -102,6 +102,7 @@ class ConfigureAccountFrame extends JFrame implements Runnable {
 	 * Holds choosen dir
 	 */
 	private JLabel lblDir;
+	private String lblDirValue;
 
 	/**
 	 * Holds settings
@@ -127,7 +128,7 @@ class ConfigureAccountFrame extends JFrame implements Runnable {
 			public void valueChanged(ListSelectionEvent e) {
 				enableSettingPanel();
 				selectedAccount = accountList.getSelectedValue();
-				if(null != selectedAccount) {
+				if (null != selectedAccount) {
 					updatedUIToSelectedAccount();
 				}
 			}
@@ -253,6 +254,7 @@ class ConfigureAccountFrame extends JFrame implements Runnable {
 					File selectedFile = fileChooser.getSelectedFile();
 					lblDir.setText("<html><body width='50px;'>"
 							+ selectedFile.getAbsolutePath() + "</body></html>");
+					lblDirValue = selectedFile.getAbsolutePath();
 				}
 				fileChooser = null;
 				self.repaint();
@@ -262,10 +264,11 @@ class ConfigureAccountFrame extends JFrame implements Runnable {
 		JButton btnSave = new JButton("Save");
 		btnSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (Main.setDirMount(selectedAccount, lblDir.getText(), oldDir)) {
+				if (Main.setDirMount(selectedAccount, lblDirValue, oldDir)) {
 					oldDir = lblDir.getText();
 				} else {
 					lblDir.setText(oldDir);
+					lblDirValue = oldDir;
 				}
 			}
 		});
@@ -274,9 +277,12 @@ class ConfigureAccountFrame extends JFrame implements Runnable {
 		JButton btnDelete = new JButton("Delete");
 		btnDelete.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				int action = JOptionPane.showConfirmDialog(self, "Are you sure to remove "
-						+ selectedAccount.getUserEmail() + "?", "Remove account", JOptionPane.YES_NO_OPTION);
-				if(action == JOptionPane.YES_OPTION) {
+				int action = JOptionPane.showConfirmDialog(
+						self,
+						"Are you sure to remove "
+								+ selectedAccount.getUserEmail() + "?",
+						"Remove account", JOptionPane.YES_NO_OPTION);
+				if (action == JOptionPane.YES_OPTION) {
 					Main.deleteAccount(selectedAccount);
 					refershAccountList();
 					selectedAccount = null;
