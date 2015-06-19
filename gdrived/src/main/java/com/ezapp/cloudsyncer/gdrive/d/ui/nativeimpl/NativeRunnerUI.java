@@ -3,6 +3,7 @@ package com.ezapp.cloudsyncer.gdrive.d.ui.nativeimpl;
 import java.net.URL;
 
 import org.apache.logging.log4j.Logger;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
@@ -154,10 +155,7 @@ class NativeRunnerUI implements RunnerUI {
 	 */
 	public void showError(String message) {
 		AppDialog dialog = new AppDialog(getShell());
-		dialog.setTitle("Error");
-		dialog.setIcon("/com/ezapp/cloudsyncer/gdrive/d/images/error.png");
-		dialog.setMessage(message);
-		dialog.open();
+		dialog.open(message, SWT.ICON_ERROR);
 	}
 
 	/**
@@ -185,10 +183,7 @@ class NativeRunnerUI implements RunnerUI {
 	 */
 	public void showWarning(String message) {
 		AppDialog dialog = new AppDialog(getShell());
-		dialog.setTitle("Warning");
-		dialog.setIcon("/com/ezapp/cloudsyncer/gdrive/d/images/warning.png");
-		dialog.setMessage(message);
-		dialog.open();
+		dialog.open(message, SWT.ICON_WARNING);
 
 	}
 
@@ -200,10 +195,7 @@ class NativeRunnerUI implements RunnerUI {
 	 */
 	public void showInfo(String message) {
 		AppDialog dialog = new AppDialog(getShell());
-		dialog.setTitle("Info");
-		dialog.setIcon("/com/ezapp/cloudsyncer/gdrive/d/images/info.png");
-		dialog.setMessage(message);
-		dialog.open();
+		dialog.open(message, SWT.ICON_INFORMATION);
 
 	}
 
