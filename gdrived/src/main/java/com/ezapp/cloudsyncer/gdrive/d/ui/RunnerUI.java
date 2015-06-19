@@ -80,5 +80,10 @@ public interface RunnerUI {
 	 * Open configuration window
 	 */
 	public void openConfigurationFrame();
+	
+	/**
+	 * Open remote browser frame
+	 */
+	public void openRemoteBrowserFrame();
 
 }

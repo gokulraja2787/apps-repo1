@@ -404,4 +404,20 @@ public class Main {
 		return true;
 	}
 
+	/**
+	 * Opens remote browser frame
+	 */
+	public static void openRemoteBrowser() {
+		runnerUI.openRemoteBrowserFrame();
+	}
+
+	/**
+	 * Get driveUtil
+	 * 
+	 * @return Drive util
+	 */
+	public static DriveUtil getDriveUtil() {
+		return driveUtil;
+	}
+
 }

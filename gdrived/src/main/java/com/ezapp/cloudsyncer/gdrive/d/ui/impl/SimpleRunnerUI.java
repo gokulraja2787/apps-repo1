@@ -32,6 +32,10 @@ class SimpleRunnerUI implements RunnerUI {
 	 * Holds configure account frame
 	 */
 	private ConfigureAccountFrame configureAccountFrame;
+	/**
+	 * Holds directory browser frame
+	 */
+	private DirectoryBrowserFrame directoryBrowserFrame;
 
 	/**
 	 * Initializes simple runner UI
@@ -40,6 +44,7 @@ class SimpleRunnerUI implements RunnerUI {
 		mainFrame = new MainFrame();
 		addAccountFrame = new AddAccountFrame();
 		configureAccountFrame = new ConfigureAccountFrame();
+		directoryBrowserFrame = new DirectoryBrowserFrame();
 	}
 
 	/*
@@ -57,6 +62,7 @@ class SimpleRunnerUI implements RunnerUI {
 	 * @see com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#shutdown(int)
 	 */
 	public int shutdown(int statusCode) {
+		directoryBrowserFrame.dispose();
 		configureAccountFrame.dispose();
 		addAccountFrame.dispose();
 		mainFrame.dispose();
@@ -87,6 +93,7 @@ class SimpleRunnerUI implements RunnerUI {
 		mainFrame.setIconImage(image);
 		addAccountFrame.setIconImage(image);
 		configureAccountFrame.setIconImage(image);
+		directoryBrowserFrame.setIconImage(image);
 	}
 
 	/*
@@ -165,6 +172,16 @@ class SimpleRunnerUI implements RunnerUI {
 	@Override
 	public void openConfigurationFrame() {
 		invokeLater(configureAccountFrame);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#openRemoteBrowserFrame()
+	 */
+	@Override
+	public void openRemoteBrowserFrame() {
+		invokeLater(directoryBrowserFrame);
 	}
 
 }

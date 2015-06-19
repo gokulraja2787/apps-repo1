@@ -51,7 +51,7 @@ class MainFrame extends JFrame implements FrameCommand {
 	 * User account layout for userAccPane
 	 */
 	private GridLayout userAccLayout;
-	
+
 	/**
 	 * Logger
 	 */
@@ -101,10 +101,19 @@ class MainFrame extends JFrame implements FrameCommand {
 			}
 		});
 		appMenu.add(appAddAccount);
-		
+
+		JMenuItem mntmBrowseRemoteDirectory = new JMenuItem(
+				"Browse Remote Directory");
+		mntmBrowseRemoteDirectory.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Main.openRemoteBrowser();
+			}
+		});
+		appMenu.add(mntmBrowseRemoteDirectory);
+
 		JMenu mnConfigure = new JMenu("Configure");
 		appMenu.add(mnConfigure);
-		
+
 		JMenu mnThemeSubmenu = new JMenu("Theme");
 		ThemeContextListener themeContextListner = new ThemeContextListener();
 		String themes[] = RunnerUIFactory.getImpls();
@@ -116,7 +125,7 @@ class MainFrame extends JFrame implements FrameCommand {
 				mnThemeSubmenu.add(mnThemeItem);
 			}
 		}
-		
+
 		JMenuItem mntmConfigureAccounts = new JMenuItem("Configure Account(s)");
 		mntmConfigureAccounts.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -125,7 +134,7 @@ class MainFrame extends JFrame implements FrameCommand {
 		});
 		mnConfigure.add(mntmConfigureAccounts);
 		mnConfigure.add(mnThemeSubmenu);
-		
+
 		JSeparator separator = new JSeparator();
 		appMenu.add(separator);
 		appMenu.add(appMenuExit);

@@ -29,7 +29,7 @@ class NativeRunnerUI implements RunnerUI {
 	 * Add account frame
 	 */
 	private AddAccountFrame addAccountFrame;
-	
+
 	/**
 	 * Holds configure account frame
 	 */
@@ -44,7 +44,8 @@ class NativeRunnerUI implements RunnerUI {
 	NativeRunnerUI() {
 		mainFrame = new MainFrame();
 		addAccountFrame = new AddAccountFrame(mainFrame.getDisplay());
-		configureAccountFrame = new ConfigureAccountFrame(mainFrame.getDisplay());
+		configureAccountFrame = new ConfigureAccountFrame(
+				mainFrame.getDisplay());
 	}
 
 	/*
@@ -89,12 +90,13 @@ class NativeRunnerUI implements RunnerUI {
 						e);
 			}
 		}
-		
+
 		addAccountFrame = null;
 		mainFrame = null;
 		configureAccountFrame = null;
 		return statusCode;
 	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -207,9 +209,9 @@ class NativeRunnerUI implements RunnerUI {
 	public void updateUserAccountConfig() {
 		if (null != mainFrame) {
 			Display display = mainFrame.getDisplay();
-			if(null != display && !display.isDisposed()) {
+			if (null != display && !display.isDisposed()) {
 				display.asyncExec(new Runnable() {
-					
+
 					@Override
 					public void run() {
 						mainFrame.updateConfiguredAccounts();
@@ -222,6 +224,7 @@ class NativeRunnerUI implements RunnerUI {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#openConfigurationFrame()
 	 */
 	@Override
@@ -229,7 +232,18 @@ class NativeRunnerUI implements RunnerUI {
 		if (null != configureAccountFrame) {
 			configureAccountFrame.openAndStart();
 		}
-		
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#openRemoteBrowserFrame()
+	 */
+	@Override
+	public void openRemoteBrowserFrame() {
+		// TODO Impl pending
+
 	}
 
 }
