@@ -36,6 +36,11 @@ class NativeRunnerUI implements RunnerUI {
 	private ConfigureAccountFrame configureAccountFrame;
 
 	/**
+	 * Holds directory browser frame
+	 */
+	private DirectoryBrowserFrame directoryBrowserFrame;
+
+	/**
 	 * Logger
 	 */
 	private static final Logger LOGGER = LogManager
@@ -45,6 +50,8 @@ class NativeRunnerUI implements RunnerUI {
 		mainFrame = new MainFrame();
 		addAccountFrame = new AddAccountFrame(mainFrame.getDisplay());
 		configureAccountFrame = new ConfigureAccountFrame(
+				mainFrame.getDisplay());
+		directoryBrowserFrame = new DirectoryBrowserFrame(
 				mainFrame.getDisplay());
 	}
 
@@ -66,6 +73,14 @@ class NativeRunnerUI implements RunnerUI {
 	 * @see com.ezapp.cloudsyncer.gdrive.d.ui.RunnerUI#shutdown(int)
 	 */
 	public int shutdown(int statusCode) {
+		if (null != directoryBrowserFrame) {
+			try {
+				directoryBrowserFrame.close();
+			} catch (Exception e) {
+				LOGGER.warn("Error while closing instance: " + e.getMessage(),
+						e);
+			}
+		}
 		if (null != configureAccountFrame) {
 			try {
 				configureAccountFrame.close();
@@ -124,6 +139,9 @@ class NativeRunnerUI implements RunnerUI {
 		}
 		if (null != configureAccountFrame) {
 			configureAccountFrame.setAppImageIcon(url);
+		}
+		if (null != directoryBrowserFrame) {
+			directoryBrowserFrame.setAppImageIcon(url);
 		}
 	}
 
@@ -242,7 +260,9 @@ class NativeRunnerUI implements RunnerUI {
 	 */
 	@Override
 	public void openRemoteBrowserFrame() {
-		// TODO Impl pending
+		if (null != directoryBrowserFrame) {
+			directoryBrowserFrame.openAndStart();
+		}
 
 	}
 

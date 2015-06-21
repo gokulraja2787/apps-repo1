@@ -82,6 +82,15 @@ class MainFrame {
 			}
 		});
 		mntmAddAccount.setText("Add Account");
+		
+		MenuItem mntmBrowseRemote = new MenuItem(menu_1, SWT.NONE);
+		mntmBrowseRemote.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				Main.openRemoteBrowser();
+			}
+		});
+		mntmBrowseRemote.setText("Browse Remote Directory");
 
 		MenuItem mntmConfigureMenu = new MenuItem(menu_1, SWT.CASCADE);
 		mntmConfigureMenu.setText("Configure");
