@@ -17,12 +17,14 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.OverlayLayout;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 
@@ -43,6 +45,258 @@ import com.ezapp.cloudsyncer.gdrive.d.vo.RemoteFile;
 class DirectoryBrowserFrame extends JFrame implements Runnable {
 
 	/**
+	 * Thread to set files inside file browsing pane
+	 * 
+	 * @author grangarajan
+	 *
+	 */
+	private class FileBrowsingPaneSetter implements Runnable {
+
+		/**
+		 * Account to draw the files for
+		 */
+		private Account forAccount;
+
+		private FileBrowsingPaneSetter() {
+		}
+
+		/**
+		 * Show files in the Pane
+		 */
+		private void drawFiles(Account account) {
+			LOGGER.info("Starting to root draw files");
+			if (null != account) {
+				IRemoteFileUtil remoteFileUtil = RemoteFileUtilImplFactory
+						.getInstance().getRemoteFileUtilInstance(account);
+				String rootFolderId;
+				try {
+					rootFolderId = (String) remoteFileUtil.getRootFolder();
+					drawFiles(account, rootFolderId);
+				} catch (AppFileException | MalformedURLException e) {
+					LOGGER.error("Error while processing file metadata: ", e);
+					Main.showErrorMessage("Error while processing file meta");
+				} finally {
+					remoteFileUtil = null;
+				}
+
+			}
+		}
+
+		private void drawFiles(final Account account, String folderId)
+				throws AppFileException, MalformedURLException {
+			LOGGER.info("Starting to draw files for " + folderId);
+			GridLayout layout = new GridLayout();
+			if (null != folderId) {
+				IRemoteFileUtil remoteFileUtil = RemoteFileUtilImplFactory
+						.getInstance().getRemoteFileUtilInstance(account);
+				List<RemoteFile> fileList;
+				try {
+					layout.setColumns(2);
+					layout.setRows(0);
+					filePane.setLayout(layout);
+					fileList = remoteFileUtil.getAllFiles(folderId);
+					filePane.removeAll();
+					JPanel innerPanel;
+					GridLayout innerLayout;
+					filePane.add(getUIParentItem(account, folderId));
+					for (final RemoteFile file : fileList) {
+						String fname = file.getFileName();
+						String type = file.getFileMimeType();
+						if (fname == null || fname.equals("")) {
+							fname = file.getFileTitle();
+						}
+						// LOGGER.debug(fname + " - " + type);
+						JLabel nam = new JLabel();
+						nam.setText(fname);
+						String iconUrl = file.getIconUrl();
+						JLabel imgLab = new JLabel();
+						if (null != iconUrl) {
+							if (LOGGER.isDebugEnabled()) {
+								LOGGER.debug("Drawing: " + iconUrl);
+							}
+							URL iconPic = new URL(iconUrl);
+							ImageIcon icon = new ImageIcon(iconPic);
+							imgLab.setIcon(icon);
+						}
+						innerPanel = new JPanel();
+						innerLayout = new GridLayout(2, 1);
+						innerPanel.setToolTipText(fname);
+						innerPanel.setLayout(innerLayout);
+						innerPanel.add(imgLab);
+						innerPanel.add(nam);
+						innerPanel.setSize(30, 60);
+						innerPanel.setBackground(Color.WHITE);
+						innerPanel.setBorder(new LineBorder(Color.BLACK));
+						if (type.equals("application/vnd.google-apps.folder")) {
+							innerPanel.setToolTipText("Double click to open "
+									+ fname);
+							innerPanel.addMouseListener(new MouseListener() {
+
+								@Override
+								public void mouseReleased(MouseEvent e) {
+									// Not implemented
+
+								}
+
+								@Override
+								public void mousePressed(MouseEvent e) {
+									// Not implemented
+
+								}
+
+								@Override
+								public void mouseExited(MouseEvent e) {
+									// Not implemented
+
+								}
+
+								@Override
+								public void mouseEntered(MouseEvent e) {
+									// Not implemented
+
+								}
+
+								@Override
+								public void mouseClicked(MouseEvent e) {
+									if (e.getClickCount() == 2) {
+										startAnimatedOverLay();
+										new Thread(new Runnable() {
+											public void run() {
+												try {
+													drawFiles(account,
+															file.getFileId());
+												} catch (MalformedURLException
+														| AppFileException e1) {
+													LOGGER.error(
+															"Folder traversal failed! ",
+															e1);
+													Main.showErrorMessage("Folder traversal failed!");
+												}
+											}
+										}).start();
+										;
+									}
+
+								}
+							});
+						}
+						filePane.add(innerPanel);
+					}
+				} finally {
+					fileList = null;
+				}
+				closeAnimatedOverlay();
+			}
+		}
+
+		/**
+		 * Draws up folder
+		 * 
+		 * @param account
+		 * @param folderId
+		 * @return
+		 */
+		private JPanel getUIParentItem(final Account account, String folderId) {
+			JPanel innerPanel;
+			GridLayout innerLayout;
+			innerPanel = new JPanel();
+			innerLayout = new GridLayout(2, 1);
+			innerPanel.setToolTipText("Go up");
+			innerPanel.setLayout(innerLayout);
+			List<RemoteFile> parentList;
+			IRemoteFileUtil remoteFileUtil = RemoteFileUtilImplFactory
+					.getInstance().getRemoteFileUtilInstance(account);
+			try {
+				parentList = remoteFileUtil.getParent(folderId);
+				if (null != parentList && parentList.size() > 0) {
+					final RemoteFile parent = parentList.get(0);
+					if (null != parent.getIconUrl()) {
+						JLabel imgLab = new JLabel();
+						try {
+							imgLab.setIcon(new ImageIcon(new URL(parent
+									.getIconUrl())));
+						} catch (MalformedURLException e) {
+							LOGGER.error("Folder traversal failed! ", e);
+						}
+						innerPanel.add(imgLab);
+					}
+					innerPanel.add(new JLabel(".."));
+					innerPanel.addMouseListener(new MouseListener() {
+
+						@Override
+						public void mouseReleased(MouseEvent e) {
+							// Not implemented
+
+						}
+
+						@Override
+						public void mousePressed(MouseEvent e) {
+							// Not implemented
+
+						}
+
+						@Override
+						public void mouseExited(MouseEvent e) {
+							// Not implemented
+
+						}
+
+						@Override
+						public void mouseEntered(MouseEvent e) {
+							// Not implemented
+
+						}
+
+						@Override
+						public void mouseClicked(MouseEvent e) {
+							startAnimatedOverLay();
+							new Thread(new Runnable() {
+
+								@Override
+								public void run() {
+									try {
+										drawFiles(account, parent.getFileId());
+									} catch (MalformedURLException
+											| AppFileException e1) {
+										LOGGER.error(
+												"Folder traversal failed! ", e1);
+										Main.showErrorMessage("Folder traversal failed!");
+									}
+								}
+							}).start();
+						}
+					});
+				}
+			} catch (AppFileException e) {
+				LOGGER.error("Folder traversal failed! ", e);
+				Main.showErrorMessage("Folder traversal failed!");
+			}
+			return innerPanel;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see java.lang.Runnable#run()
+		 */
+		@Override
+		public void run() {
+			if (null != forAccount) {
+				LOGGER.info("Running to set files");
+				drawFiles(forAccount);
+			} else {
+				LOGGER.info("Running to clear files");
+				filePane.removeAll();
+			}
+			filePane.repaint();
+			filePane.revalidate();
+			self.repaint();
+			self.revalidate();
+		}
+
+	}
+
+	/**
 	 * Self reference
 	 */
 	private JFrame self;
@@ -59,6 +313,10 @@ class DirectoryBrowserFrame extends JFrame implements Runnable {
 	private JPanel filePane;
 
 	private JScrollPane scrollPane;
+
+	private AnimatedOverlay overlay = new AnimatedOverlay();
+
+	private JLayeredPane layeredPanel = new JLayeredPane();
 
 	/**
 	 * Serial id
@@ -84,7 +342,7 @@ class DirectoryBrowserFrame extends JFrame implements Runnable {
 
 		filePane = new JPanel();
 		filePane.setBackground(Color.WHITE);
-		scrollPane = new JScrollPane(filePane);
+		scrollPane = new JScrollPane(layeredPanel);
 		scrollPane.setBackground(Color.WHITE);
 		scrollPane.setViewportBorder(new EtchedBorder(EtchedBorder.RAISED,
 				null, null));
@@ -177,6 +435,9 @@ class DirectoryBrowserFrame extends JFrame implements Runnable {
 				drawAccount(fileActionToolBar, account);
 			}
 		}
+		scrollPane.setViewportView(layeredPanel);
+		layeredPanel.setLayout(new OverlayLayout(layeredPanel));
+		layeredPanel.add(filePane, JLayeredPane.DEFAULT_LAYER);
 		getContentPane().setLayout(groupLayout);
 	}
 
@@ -212,225 +473,42 @@ class DirectoryBrowserFrame extends JFrame implements Runnable {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (btnAcc.isSelected()) {
-						drawFiles(account);
+						startAnimatedOverLay();
+						FileBrowsingPaneSetter fileSetter = new FileBrowsingPaneSetter();
+						fileSetter.forAccount = account;
+						new Thread(fileSetter).start();
 					} else {
 						LOGGER.info("Clearing pane");
-						filePane.removeAll();
+						new Thread(new FileBrowsingPaneSetter()).start();
 					}
-					scrollPane.setViewportView(filePane);
-					filePane.repaint();
-					filePane.revalidate();
-					self.repaint();
-					self.revalidate();
 				}
 			});
+
 		} catch (MalformedURLException e1) {
 			LOGGER.error("Error while forming icon: " + e1.getMessage(), e1);
 		}
 		fileActionToolBar.add(btnAcc);
 	}
 
-	/**
-	 * Show files in the Pane
-	 */
-	private void drawFiles(Account account) {
-		LOGGER.info("Starting to root draw files");
-		if (null != account) {
-			IRemoteFileUtil remoteFileUtil = RemoteFileUtilImplFactory
-					.getInstance().getRemoteFileUtilInstance(account);
-			String rootFolderId;
-			try {
-				rootFolderId = (String) remoteFileUtil.getRootFolder();
-				drawFiles(account, rootFolderId);
-			} catch (AppFileException | MalformedURLException e) {
-				LOGGER.error("Error while processing file metadata: ", e);
-				Main.showErrorMessage("Error while processing file meta");
-			} finally {
-				remoteFileUtil = null;
-			}
+	private void startAnimatedOverLay() {
+		LOGGER.debug("Show loading");
+		layeredPanel.add(overlay, JLayeredPane.DEFAULT_LAYER);
+		layeredPanel.setPosition(filePane, -1);
+		layeredPanel.repaint();
+		layeredPanel.revalidate();
+		self.repaint();
+		self.revalidate();
 
-		}
 	}
 
-	private void drawFiles(final Account account, String folderId)
-			throws AppFileException, MalformedURLException {
-		LOGGER.info("Starting to draw files for " + folderId);
-		GridLayout layout = new GridLayout();
-		if (null != folderId) {
-			IRemoteFileUtil remoteFileUtil = RemoteFileUtilImplFactory
-					.getInstance().getRemoteFileUtilInstance(account);
-			List<RemoteFile> fileList;
-			try {
-				layout.setColumns(2);
-				layout.setRows(0);
-				filePane.setLayout(layout);
-				filePane.add(new JLabel("Loading please wait..."));
-				filePane.repaint();
-				filePane.revalidate();
-				self.repaint();
-				self.revalidate();
-				fileList = remoteFileUtil.getAllFiles(folderId);
-				filePane.removeAll();
-				JPanel innerPanel;
-				GridLayout innerLayout;
-				filePane.add(getUIParentItem(account, folderId));
-				for (final RemoteFile file : fileList) {
-					String fname = file.getFileName();
-					String type = file.getFileMimeType();
-					if (fname == null || fname.equals("")) {
-						fname = file.getFileTitle();
-					}
-					// LOGGER.debug(fname + " - " + type);
-					JLabel nam = new JLabel();
-					nam.setText(fname);
-					String iconUrl = file.getIconUrl();
-					JLabel imgLab = new JLabel();
-					if (null != iconUrl) {
-						if (LOGGER.isDebugEnabled()) {
-							LOGGER.debug("Drawing: " + iconUrl);
-						}
-						URL iconPic = new URL(iconUrl);
-						ImageIcon icon = new ImageIcon(iconPic);
-						imgLab.setIcon(icon);
-					}
-					innerPanel = new JPanel();
-					innerLayout = new GridLayout(2, 1);
-					innerPanel.setToolTipText(fname);
-					innerPanel.setLayout(innerLayout);
-					innerPanel.add(imgLab);
-					innerPanel.add(nam);
-					innerPanel.setSize(30, 60);
-					innerPanel.setBackground(Color.WHITE);
-					innerPanel.setBorder(new LineBorder(Color.BLACK));
-					if (type.equals("application/vnd.google-apps.folder")) {
-						innerPanel.setToolTipText("Double click to open "
-								+ fname);
-						innerPanel.addMouseListener(new MouseListener() {
-
-							@Override
-							public void mouseReleased(MouseEvent e) {
-								// Not implemented
-
-							}
-
-							@Override
-							public void mousePressed(MouseEvent e) {
-								// Not implemented
-
-							}
-
-							@Override
-							public void mouseExited(MouseEvent e) {
-								// Not implemented
-
-							}
-
-							@Override
-							public void mouseEntered(MouseEvent e) {
-								// Not implemented
-
-							}
-
-							@Override
-							public void mouseClicked(MouseEvent e) {
-								if (e.getClickCount() == 2) {
-									try {
-										drawFiles(account, file.getFileId());
-									} catch (MalformedURLException
-											| AppFileException e1) {
-										LOGGER.error(
-												"Folder traversal failed! ", e1);
-										Main.showErrorMessage("Folder traversal failed!");
-									}
-								}
-
-							}
-						});
-					}
-					filePane.add(innerPanel);
-				}
-			} finally {
-				fileList = null;
-			}
-
-		}
-	}
-
-	/**
-	 * Draws up folder
-	 * 
-	 * @param account
-	 * @param folderId
-	 * @return
-	 */
-	private JPanel getUIParentItem(final Account account, String folderId) {
-		JPanel innerPanel;
-		GridLayout innerLayout;
-		innerPanel = new JPanel();
-		innerLayout = new GridLayout(2, 1);
-		innerPanel.setToolTipText("Go up");
-		innerPanel.setLayout(innerLayout);
-		List<RemoteFile> parentList;
-		IRemoteFileUtil remoteFileUtil = RemoteFileUtilImplFactory
-				.getInstance().getRemoteFileUtilInstance(account);
-		try {
-			parentList = remoteFileUtil.getParent(folderId);
-			if (null != parentList && parentList.size() > 0) {
-				final RemoteFile parent = parentList.get(0);
-				if (null != parent.getIconUrl()) {
-					JLabel imgLab = new JLabel();
-					try {
-						imgLab.setIcon(new ImageIcon(new URL(parent
-								.getIconUrl())));
-					} catch (MalformedURLException e) {
-						LOGGER.error("Folder traversal failed! ", e);
-					}
-					innerPanel.add(imgLab);
-				}
-				innerPanel.add(new JLabel(".."));
-				innerPanel.addMouseListener(new MouseListener() {
-
-					@Override
-					public void mouseReleased(MouseEvent e) {
-						// Not implemented
-
-					}
-
-					@Override
-					public void mousePressed(MouseEvent e) {
-						// Not implemented
-
-					}
-
-					@Override
-					public void mouseExited(MouseEvent e) {
-						// Not implemented
-
-					}
-
-					@Override
-					public void mouseEntered(MouseEvent e) {
-						// Not implemented
-
-					}
-
-					@Override
-					public void mouseClicked(MouseEvent e) {
-						try {
-							drawFiles(account, parent.getFileId());
-						} catch (MalformedURLException | AppFileException e1) {
-							LOGGER.error("Folder traversal failed! ", e);
-							Main.showErrorMessage("Folder traversal failed!");
-						}
-
-					}
-				});
-			}
-		} catch (AppFileException e) {
-			LOGGER.error("Folder traversal failed! ", e);
-			Main.showErrorMessage("Folder traversal failed!");
-		}
-		return innerPanel;
+	private void closeAnimatedOverlay() {
+		LOGGER.debug("hide loading");
+		layeredPanel.remove(overlay);
+		layeredPanel.setPosition(filePane, JLayeredPane.DEFAULT_LAYER);
+		filePane.repaint();
+		filePane.revalidate();
+		self.repaint();
+		self.revalidate();
 	}
 
 	/*
