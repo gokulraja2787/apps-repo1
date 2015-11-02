@@ -7,6 +7,7 @@ import javax.swing.JLabel;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 import java.awt.SystemColor;
+import java.awt.CardLayout;
 
 /**
  * Panel to display animated overlay
@@ -56,13 +57,12 @@ class AnimatedOverlay extends JPanel {
 
 	public void initUI(){
 		setSize(197, 94);
-		setLayout(null);
+		setLayout(new CardLayout(0, 0));
 		
 		JLabel lblAnimator = new JLabel("");
 		lblAnimator.setBackground(SystemColor.text);
 		lblAnimator.setIcon(new ImageIcon(AnimatedOverlay.class.getResource("/com/ezapp/cloudsyncer/gdrive/d/images/loader.gif")));
-		lblAnimator.setBounds(10, 11, 177, 72);
-		add(lblAnimator);
+		add(lblAnimator, "name_19364024515970");
 	}
 	
 }

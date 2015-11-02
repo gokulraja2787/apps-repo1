@@ -5,8 +5,7 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -35,6 +34,8 @@ import com.ezapp.cloudsyncer.gdrive.d.cloud.IRemoteFileUtil;
 import com.ezapp.cloudsyncer.gdrive.d.cloud.RemoteFileUtilImplFactory;
 import com.ezapp.cloudsyncer.gdrive.d.exceptions.AppFileException;
 import com.ezapp.cloudsyncer.gdrive.d.log.LogManager;
+import com.ezapp.cloudsyncer.gdrive.d.ui.IFileUIHandler;
+import com.ezapp.cloudsyncer.gdrive.d.ui.event.listener.FileMouseListener;
 import com.ezapp.cloudsyncer.gdrive.d.vo.Account;
 import com.ezapp.cloudsyncer.gdrive.d.vo.RemoteFile;
 
@@ -50,29 +51,36 @@ class DirectoryBrowserFrame extends JFrame implements Runnable {
 	 * @author grangarajan
 	 *
 	 */
-	private class FileBrowsingPaneSetter implements Runnable {
+	private class FileBrowsingPaneSetter implements Runnable, IFileUIHandler {
 
 		/**
 		 * Account to draw the files for
 		 */
 		private Account forAccount;
 
+		/**
+		 * Panel listener
+		 */
+		private FileMouseListener mouseListener = new FileMouseListener(this);
+
 		private FileBrowsingPaneSetter() {
 		}
 
 		/**
 		 * Show files in the Pane
+		 * 
 		 */
-		private void drawFiles(Account account) {
+		@Override
+		public void drawFiles() {
 			LOGGER.info("Starting to root draw files");
-			if (null != account) {
+			if (null != forAccount) {
 				IRemoteFileUtil remoteFileUtil = RemoteFileUtilImplFactory
-						.getInstance().getRemoteFileUtilInstance(account);
+						.getInstance().getRemoteFileUtilInstance(forAccount);
 				String rootFolderId;
 				try {
 					rootFolderId = (String) remoteFileUtil.getRootFolder();
-					drawFiles(account, rootFolderId);
-				} catch (AppFileException | MalformedURLException e) {
+					drawFiles(rootFolderId);
+				} catch (AppFileException | IOException e) {
 					LOGGER.error("Error while processing file metadata: ", e);
 					Main.showErrorMessage("Error while processing file meta");
 				} finally {
@@ -82,13 +90,21 @@ class DirectoryBrowserFrame extends JFrame implements Runnable {
 			}
 		}
 
-		private void drawFiles(final Account account, String folderId)
-				throws AppFileException, MalformedURLException {
+		/**
+		 * Iterate and show files in the folder
+		 * 
+		 * @param folderId
+		 * @throws AppFileException
+		 * @throws IOException
+		 */
+		@Override
+		public void drawFiles(String folderId) throws AppFileException,
+				IOException {
 			LOGGER.info("Starting to draw files for " + folderId);
 			GridLayout layout = new GridLayout();
 			if (null != folderId) {
 				IRemoteFileUtil remoteFileUtil = RemoteFileUtilImplFactory
-						.getInstance().getRemoteFileUtilInstance(account);
+						.getInstance().getRemoteFileUtilInstance(forAccount);
 				List<RemoteFile> fileList;
 				try {
 					layout.setColumns(2);
@@ -98,7 +114,7 @@ class DirectoryBrowserFrame extends JFrame implements Runnable {
 					filePane.removeAll();
 					JPanel innerPanel;
 					GridLayout innerLayout;
-					filePane.add(getUIParentItem(account, folderId));
+					filePane.add(getUIParentItem(forAccount, folderId));
 					for (final RemoteFile file : fileList) {
 						String fname = file.getFileName();
 						String type = file.getFileMimeType();
@@ -118,7 +134,7 @@ class DirectoryBrowserFrame extends JFrame implements Runnable {
 							ImageIcon icon = new ImageIcon(iconPic);
 							imgLab.setIcon(icon);
 						}
-						innerPanel = new JPanel();
+						innerPanel = new FilePanel(file);
 						innerLayout = new GridLayout(2, 1);
 						innerPanel.setToolTipText(fname);
 						innerPanel.setLayout(innerLayout);
@@ -127,58 +143,13 @@ class DirectoryBrowserFrame extends JFrame implements Runnable {
 						innerPanel.setSize(30, 60);
 						innerPanel.setBackground(Color.WHITE);
 						innerPanel.setBorder(new LineBorder(Color.BLACK));
+						innerPanel.addMouseListener(mouseListener);
 						if (type.equals("application/vnd.google-apps.folder")) {
 							innerPanel.setToolTipText("Double click to open "
 									+ fname);
-							innerPanel.addMouseListener(new MouseListener() {
-
-								@Override
-								public void mouseReleased(MouseEvent e) {
-									// Not implemented
-
-								}
-
-								@Override
-								public void mousePressed(MouseEvent e) {
-									// Not implemented
-
-								}
-
-								@Override
-								public void mouseExited(MouseEvent e) {
-									// Not implemented
-
-								}
-
-								@Override
-								public void mouseEntered(MouseEvent e) {
-									// Not implemented
-
-								}
-
-								@Override
-								public void mouseClicked(MouseEvent e) {
-									if (e.getClickCount() == 2) {
-										startAnimatedOverLay();
-										new Thread(new Runnable() {
-											public void run() {
-												try {
-													drawFiles(account,
-															file.getFileId());
-												} catch (MalformedURLException
-														| AppFileException e1) {
-													LOGGER.error(
-															"Folder traversal failed! ",
-															e1);
-													Main.showErrorMessage("Folder traversal failed!");
-												}
-											}
-										}).start();
-										;
-									}
-
-								}
-							});
+						} else {
+							innerPanel
+									.setToolTipText("File MIME Type: " + type);
 						}
 						filePane.add(innerPanel);
 					}
@@ -197,12 +168,8 @@ class DirectoryBrowserFrame extends JFrame implements Runnable {
 		 * @return
 		 */
 		private JPanel getUIParentItem(final Account account, String folderId) {
-			JPanel innerPanel;
+			JPanel innerPanel = new JPanel();
 			GridLayout innerLayout;
-			innerPanel = new JPanel();
-			innerLayout = new GridLayout(2, 1);
-			innerPanel.setToolTipText("Go up");
-			innerPanel.setLayout(innerLayout);
 			List<RemoteFile> parentList;
 			IRemoteFileUtil remoteFileUtil = RemoteFileUtilImplFactory
 					.getInstance().getRemoteFileUtilInstance(account);
@@ -210,6 +177,10 @@ class DirectoryBrowserFrame extends JFrame implements Runnable {
 				parentList = remoteFileUtil.getParent(folderId);
 				if (null != parentList && parentList.size() > 0) {
 					final RemoteFile parent = parentList.get(0);
+					innerPanel = new FilePanel(parent);
+					innerLayout = new GridLayout(2, 1);
+					innerPanel.setToolTipText("Go up");
+					innerPanel.setLayout(innerLayout);
 					if (null != parent.getIconUrl()) {
 						JLabel imgLab = new JLabel();
 						try {
@@ -221,51 +192,7 @@ class DirectoryBrowserFrame extends JFrame implements Runnable {
 						innerPanel.add(imgLab);
 					}
 					innerPanel.add(new JLabel(".."));
-					innerPanel.addMouseListener(new MouseListener() {
-
-						@Override
-						public void mouseReleased(MouseEvent e) {
-							// Not implemented
-
-						}
-
-						@Override
-						public void mousePressed(MouseEvent e) {
-							// Not implemented
-
-						}
-
-						@Override
-						public void mouseExited(MouseEvent e) {
-							// Not implemented
-
-						}
-
-						@Override
-						public void mouseEntered(MouseEvent e) {
-							// Not implemented
-
-						}
-
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							startAnimatedOverLay();
-							new Thread(new Runnable() {
-
-								@Override
-								public void run() {
-									try {
-										drawFiles(account, parent.getFileId());
-									} catch (MalformedURLException
-											| AppFileException e1) {
-										LOGGER.error(
-												"Folder traversal failed! ", e1);
-										Main.showErrorMessage("Folder traversal failed!");
-									}
-								}
-							}).start();
-						}
-					});
+					innerPanel.addMouseListener(mouseListener);
 				}
 			} catch (AppFileException e) {
 				LOGGER.error("Folder traversal failed! ", e);
@@ -283,7 +210,7 @@ class DirectoryBrowserFrame extends JFrame implements Runnable {
 		public void run() {
 			if (null != forAccount) {
 				LOGGER.info("Running to set files");
-				drawFiles(forAccount);
+				drawFiles();
 			} else {
 				LOGGER.info("Running to clear files");
 				filePane.removeAll();
@@ -292,6 +219,26 @@ class DirectoryBrowserFrame extends JFrame implements Runnable {
 			filePane.revalidate();
 			self.repaint();
 			self.revalidate();
+		}
+
+		/**
+		 * Gets for account
+		 * 
+		 * @return the forAccount
+		 */
+		@Override
+		public Account getForAccount() {
+			return forAccount;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see com.ezapp.cloudsyncer.gdrive.d.ui.IFileUIHandler#doMisc()
+		 */
+		@Override
+		public void doMisc() {
+			startAnimatedOverLay();
 		}
 
 	}

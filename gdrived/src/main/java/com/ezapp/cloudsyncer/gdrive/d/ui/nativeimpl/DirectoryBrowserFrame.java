@@ -7,8 +7,6 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -32,6 +30,8 @@ import com.ezapp.cloudsyncer.gdrive.d.cloud.IRemoteFileUtil;
 import com.ezapp.cloudsyncer.gdrive.d.cloud.RemoteFileUtilImplFactory;
 import com.ezapp.cloudsyncer.gdrive.d.exceptions.AppFileException;
 import com.ezapp.cloudsyncer.gdrive.d.log.LogManager;
+import com.ezapp.cloudsyncer.gdrive.d.ui.IFileUIHandler;
+import com.ezapp.cloudsyncer.gdrive.d.ui.event.listener.FileMouseListener;
 import com.ezapp.cloudsyncer.gdrive.d.vo.Account;
 import com.ezapp.cloudsyncer.gdrive.d.vo.RemoteFile;
 
@@ -43,7 +43,7 @@ import com.ezapp.cloudsyncer.gdrive.d.vo.RemoteFile;
  * @author gokul
  *
  */
-class DirectoryBrowserFrame {
+class DirectoryBrowserFrame implements IFileUIHandler {
 
 	/**
 	 * Holds shell
@@ -62,6 +62,16 @@ class DirectoryBrowserFrame {
 	 * Holds Toolbar
 	 */
 	private ToolBar fileActionToolBar;
+
+	/**
+	 * Holds for Account
+	 */
+	private Account forAccount;
+
+	/**
+	 * Mouse listener
+	 */
+	private FileMouseListener mouseListener = new FileMouseListener(this);
 
 	/**
 	 * Logger
@@ -83,7 +93,7 @@ class DirectoryBrowserFrame {
 	private void initUI() {
 		shell = new Shell(display);
 		shell.setText("gdrive-d: Browse remote directory");
-		shell.setSize(800, 744);
+		shell.setSize(818, 744);
 		shell.setLayout(new FormLayout());
 
 		fileActionToolBar = new ToolBar(shell, SWT.FLAT | SWT.RIGHT);
@@ -185,6 +195,7 @@ class DirectoryBrowserFrame {
 		String picUrl = account.getPictureUrl();
 		URL userPicURL;
 		itm.setToolTipText(account.getUserId());
+		this.forAccount = account;
 		try {
 			if (null == picUrl || picUrl.trim().equals("")) {
 				userPicURL = Thread
@@ -207,12 +218,14 @@ class DirectoryBrowserFrame {
 							@Override
 							public void run() {
 								if (itm.getSelection()) {
-									drawFiles(account);
+									drawFiles();
 								} else {
 									fileListComposite.dispose();
 									scrolledComposite.dispose();
-									scrolledComposite = new ScrolledComposite(shell, SWT.NONE);
-									fileListComposite = new Composite(scrolledComposite, SWT.NONE);
+									scrolledComposite = new ScrolledComposite(
+											shell, SWT.NONE);
+									fileListComposite = new Composite(
+											scrolledComposite, SWT.NONE);
 								}
 							}
 						});
@@ -237,15 +250,16 @@ class DirectoryBrowserFrame {
 	/**
 	 * Show files in the Pane
 	 */
-	private void drawFiles(Account account) {
+	@Override
+	public void drawFiles() {
 		LOGGER.info("Starting to root draw files");
-		if (null != account) {
+		if (null != forAccount) {
 			IRemoteFileUtil remoteFileUtil = RemoteFileUtilImplFactory
-					.getInstance().getRemoteFileUtilInstance(account);
+					.getInstance().getRemoteFileUtilInstance(forAccount);
 			String rootFolderId;
 			try {
 				rootFolderId = (String) remoteFileUtil.getRootFolder();
-				drawFiles(account, rootFolderId);
+				drawFiles(rootFolderId);
 			} catch (AppFileException | IOException e) {
 				LOGGER.error("Error while processing file metadata: ", e);
 				Main.showErrorMessage("Error while processing file meta");
@@ -256,109 +270,85 @@ class DirectoryBrowserFrame {
 		}
 	}
 
-	private void drawFiles(final Account account, String folderId)
-			throws AppFileException, IOException {
+	/**
+	 * Iterate and show files in the folder
+	 * 
+	 * @param account
+	 * @param folderId
+	 * @throws AppFileException
+	 * @throws IOException
+	 */
+	@Override
+	public void drawFiles(String folderId) throws AppFileException, IOException {
 		LOGGER.info("Starting to draw files for " + folderId);
-		if (null != folderId) {
-			IRemoteFileUtil remoteFileUtil = RemoteFileUtilImplFactory
-					.getInstance().getRemoteFileUtilInstance(account);
-			List<RemoteFile> fileList;
-			if (null == scrolledComposite) {
-				scrolledComposite = new ScrolledComposite(shell, SWT.BORDER
-						| SWT.H_SCROLL | SWT.V_SCROLL);
-			} else {
-				scrolledComposite.dispose();
-				scrolledComposite = new ScrolledComposite(shell, SWT.BORDER
-						| SWT.H_SCROLL | SWT.V_SCROLL);
-			}
-			if (null == fileListComposite) {
-				fileListComposite = new Composite(scrolledComposite, SWT.NONE);
-			} else {
-				fileListComposite.dispose();
-				fileListComposite = new Composite(scrolledComposite, SWT.NONE);
-			}
-			fileListComposite.setLayout(new GridLayout(2, false));
-			fileList = remoteFileUtil.getAllFiles(folderId);
-			getParentUIFolder(account, folderId);
-			for (final RemoteFile file : fileList) {
-				Composite innerComposite = new Composite(fileListComposite,
-						SWT.BORDER);
-				GridLayout innerLayout = new GridLayout(2, false);
-				innerComposite.setLayout(innerLayout);
-				innerComposite.setSize(60, 60);
-				String fname = file.getFileName();
-				String type = file.getFileMimeType();
-				if (fname == null || fname.equals("")) {
-					fname = file.getFileTitle();
-				}
-				String iconUrl = file.getIconUrl();
-				if (null != iconUrl) {
-					LOGGER.debug(iconUrl);
-					URL icURL = new URL(iconUrl);
-					Image image = SWTResourceManager.getImage(icURL
-							.openStream());
-					// image = scaleImage(image, width, height);
-					new Label(innerComposite, SWT.NONE).setImage(image);
-				}
-				Label nam = new Label(innerComposite, SWT.NONE);
-				nam.setText(fname);
-				innerComposite.setBackground(SWTResourceManager
-						.getColor(SWT.COLOR_WHITE));
-				innerComposite.setToolTipText(fname);
-				if (type.equals("application/vnd.google-apps.folder")) {
-					innerComposite.setToolTipText("Double click to go inside "
-							+ fname);
-					nam.setToolTipText(innerComposite.getToolTipText());
-					MouseListener lsitener = new MouseListener() {
-
-						@Override
-						public void mouseUp(MouseEvent e) {
-							// Nothing todo
-
-						}
-
-						@Override
-						public void mouseDown(MouseEvent e) {
-							// Nothing todo
-
-						}
-
-						@Override
-						public void mouseDoubleClick(MouseEvent e) {
-							try {
-								drawFiles(account, file.getFileId());
-							} catch (AppFileException | IOException e1) {
-								LOGGER.error(
-										"Error while processing file metadata: ",
-										e);
-								Main.showErrorMessage("Error while processing file meta");
-							}
-
-						}
-					};
-					innerComposite.addMouseListener(lsitener);
-					nam.addMouseListener(lsitener);
-					nam.setToolTipText(innerComposite.getToolTipText());
-				}
-			}
-			reInitScrollPane();
-			shell.layout(true);
+		IRemoteFileUtil remoteFileUtil = RemoteFileUtilImplFactory
+				.getInstance().getRemoteFileUtilInstance(forAccount);
+		List<RemoteFile> fileList;
+		if (null == scrolledComposite) {
+			scrolledComposite = new ScrolledComposite(shell, SWT.BORDER
+					| SWT.H_SCROLL | SWT.V_SCROLL);
+		} else {
+			scrolledComposite.dispose();
+			scrolledComposite = new ScrolledComposite(shell, SWT.BORDER
+					| SWT.H_SCROLL | SWT.V_SCROLL);
 		}
+		if (null == fileListComposite) {
+			fileListComposite = new Composite(scrolledComposite, SWT.NONE);
+		} else {
+			fileListComposite.dispose();
+			fileListComposite = new Composite(scrolledComposite, SWT.NONE);
+		}
+		fileListComposite.setLayout(new GridLayout(2, false));
+		fileList = remoteFileUtil.getAllFiles(folderId);
+		getParentUIFolder(folderId);
+		for (final RemoteFile file : fileList) {
+			NaiveComposite innerComposite = new NaiveComposite(fileListComposite,
+					SWT.BORDER, file);
+			GridLayout innerLayout = new GridLayout(2, false);
+			innerComposite.setLayout(innerLayout);
+			innerComposite.setSize(60, 60);
+			String fname = file.getFileName();
+			String type = file.getFileMimeType();
+			if (fname == null || fname.equals("")) {
+				fname = file.getFileTitle();
+			}
+			String iconUrl = file.getIconUrl();
+			if (null != iconUrl) {
+				LOGGER.debug(iconUrl);
+				URL icURL = new URL(iconUrl);
+				Image image = SWTResourceManager.getImage(icURL.openStream());
+				// image = scaleImage(image, width, height);
+				new Label(innerComposite, SWT.NONE).setImage(image);
+			}
+			Label nam = new Label(innerComposite, SWT.NONE);
+			nam.setText(fname);
+			innerComposite.setBackground(SWTResourceManager
+					.getColor(SWT.COLOR_WHITE));
+			innerComposite.setToolTipText(fname);
+			innerComposite.addMouseListener(mouseListener);
+			nam.addMouseListener(mouseListener);
+			if (type.equals("application/vnd.google-apps.folder")) {
+				innerComposite.setToolTipText("Double click to go inside "
+						+ fname);
+				nam.setToolTipText(innerComposite.getToolTipText());
+			}
+		}
+		reInitScrollPane();
+		shell.layout(true);
 	}
 
 	/**
 	 * Get parent UI
 	 * 
-	 * @param account
 	 * @param folderId
 	 * @return
 	 */
-	private Composite getParentUIFolder(final Account account, String folderId) {
+	private Composite getParentUIFolder(String folderId) {
 		List<RemoteFile> parentList;
 		IRemoteFileUtil remoteFileUtil = RemoteFileUtilImplFactory
-				.getInstance().getRemoteFileUtilInstance(account);
+				.getInstance().getRemoteFileUtilInstance(forAccount);
 		try {
-			Composite innerComposite = new Composite(fileListComposite,
+			NaiveComposite innerComposite = new NaiveComposite(fileListComposite,
 					SWT.BORDER);
 			parentList = remoteFileUtil.getParent(folderId);
 			GridLayout innerLayout = new GridLayout(2, false);
@@ -375,37 +365,12 @@ class DirectoryBrowserFrame {
 				}
 				Label nam = new Label(innerComposite, SWT.NONE);
 				nam.setText("..");
+				innerComposite.setFile(parent);
 				innerComposite.setBackground(SWTResourceManager
 						.getColor(SWT.COLOR_WHITE));
 				innerComposite.setToolTipText("Go to parent");
-				MouseListener listener = new MouseListener() {
-
-					@Override
-					public void mouseUp(MouseEvent e) {
-						// Nothing todo
-
-					}
-
-					@Override
-					public void mouseDown(MouseEvent e) {
-						// Nothing todo
-
-					}
-
-					@Override
-					public void mouseDoubleClick(MouseEvent e) {
-						try {
-							drawFiles(account, parent.getFileId());
-						} catch (AppFileException | IOException e1) {
-							LOGGER.error(
-									"Error while processing file metadata: ", e);
-							Main.showErrorMessage("Error while processing file meta");
-						}
-
-					}
-				};
-				innerComposite.addMouseListener(listener);
-				nam.addMouseListener(listener);
+				innerComposite.addMouseListener(mouseListener);
+				nam.addMouseListener(mouseListener);
 				nam.setToolTipText(innerComposite.getToolTipText());
 			}
 		} catch (AppFileException | IOException e) {
@@ -520,4 +485,24 @@ class DirectoryBrowserFrame {
 			});
 		}
 	}
+
+	/**
+	 * @return the forAccount
+	 */
+	@Override
+	public Account getForAccount() {
+		return forAccount;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.ezapp.cloudsyncer.gdrive.d.ui.IFileUIHandler#doMisc()
+	 */
+	@Override
+	public void doMisc() {
+		// TODO overlay comes here
+
+	}
+
 }
